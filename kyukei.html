@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+
+.kyukei, .chat, .log, .return, .log-box, .chat-box {
+  position: absolute;
+  background-color:#f7f5f4;
+  box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+  color: #102431;
+  text-shadow: 1px 1px 2px #000000; 
+  border: none;
+}
+
+.kyukei {
+  width: 100vmin;
+  height: calc(100vmin * 1.5); 
+  max-width: 640px;
+  max-height: 960px;
+  background-image: url(./img/background/kyukei.png);
+  background-size: cover;
+  overflow-y: hidden;
+}
+
+.chara {
+  width: 60%;
+  height: 80%;
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  border:1px #000;
+}
+
+.chara img {
+  height: 100%;
+  animation: breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.005); }
+}
+
+.chat, .log, .return{
+  width: 20%;
+  height: 13%;
+  bottom: 5%;
+}
+.chat { left: 40%; }
+.log { left: 10%; }
+.return { right: 10%; }
+
+.chat-box, .log-box{
+  width: 90%;
+  height: 90%;
+  overflow-y: scroll;
+  background-color:#f7f5f4;
+  position: absolute;
+  left: 5%;
+  top: 5%;
+  padding: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 6vw;
+}
+
+
+.close{
+  z-index: 2;
+  width: 10%;
+  height: 6%;
+  bottom: 5%;
+  font-weight: bold;
+  position: absolute;
+  top: 4.5%;
+  right: 3%;
+  border: none;
+  background-color: transparent;
+  color: #102431;
+}
+
+.send{
+    width: 16%;
+    height: 5%;
+    top: 2%;
+    left: 2%;
+    position: absolute;
+    font-size: 5vw;
+    line-height: 5%;
+}
+
+textarea{
+    position: absolute;
+    top: 10%;
+    width: 94%;
+    left: 2%;
+    height: 10%;
+    resize: none;
+    font-size: 3vw;
+}
+
+#messages,#logMessages{
+    width: 95%;
+    height: 76%;
+    left: 2%;
+    position: absolute;
+    top: 22%;
+    overflow-y: scroll;
+    font-size: 3vw;
+    overflow-wrap: break-word;
+}
+
+#logMessages{
+    top:8%;
+    height:90%;
+}
+
+#char-count {
+    position: absolute;
+    top: 7%;
+    right: 3%;
+    font-size: 3vw;
+}
+
+@media (min-width: 640px) {
+  button {
+	font-size: 46px;
+	line-height: 5%;
+	}
+  .close{
+    font-size: 46px;
+    top: 5.5%;
+    right: 3%;
+
+  }
+  .send{
+    font-size: 32px;
+}
+  textarea,#messages,#logMessages{
+    font-size: 20px;
+}
+  #char-count {
+    position: absolute;
+    top: 7%;
+    right: 3%;
+    font-size: 18px;
+}
+}
+
+</style>
+
+<body>
+
+
+<div class="kyukei">
+
+  <div class="chara">
+    <img src="./img/chara/kyukei.png"></img>
+  </div>
+
+    <button class="chat" onclick="chatOpen()">雑談</button>
+    <button class="log" onclick="logOpen()">履歴</button>
+    <button class="return" onclick="location.href='home.html'">退出</button>
+
+  <div class="chat-window" id="chatWindow" style="display:none">
+    <div class="chat-box" id="chatBox" >
+        <button id="send" class="send">発言</button>
+        <div id="char-count">0/140文字</div>
+        <textarea  id="message" rows="2" maxlength="140" placeholder="発言内容" oninput="updateCharacterCount()"></textarea>
+        <div id="messages"></div>
+    </div>  
+    <button class="close" id="closeChatButton" onclick="chatClose()">戻</button>
+  </div>
+
+  <div class="log-window" id="logWindow" style="display:none">
+    <div class="log-box" id="logBox" >
+        <div id="logMessages"></div>
+    </div>
+    <button class="close" id="closelogButton" onclick="logClose()">戻</button>
+  </div>
+
+</div>
+</body>
+
+
+<script type="module">
+const firebaseConfig = {
+apiKey: "AIzaSyAKvoX9I14uUOj7dYEItVXJGr-gNMz1xfc",
+  authDomain: "testgame-5940a.firebaseapp.com",
+  databaseURL: "https://testgame-5940a-default-rtdb.firebaseio.com",
+  projectId: "testgame-5940a",
+  storageBucket: "testgame-5940a.appspot.com",
+  messagingSenderId: "189198151711",
+  appId: "1:189198151711:web:4e67860e2222d2eb10252a",
+  measurementId: "G-Y0V1D8CHZJ"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, setPersistence, signInWithEmailAndPassword,onAuthStateChanged,GoogleAuthProvider,browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, get,push,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+  // The persistence has been set to 'local'
+})
+.catch((error) => {
+  console.error('Failed to set persistence:', error);
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        var username = user.displayName;
+    }
+
+    // メッセージを送る
+    document.getElementById('send').addEventListener('click', function() {
+        let message = document.getElementById('message').value;
+        const messageNode = ref(db, 'common/message');
+        let timestamp = Date.now();
+
+        get(messageNode).then((snapshot) => {
+            let messages = snapshot.val() ? JSON.parse(snapshot.val()) : {};
+            messages[username + '_' + timestamp] = message;
+            let keys = Object.keys(messages);
+            keys.sort();
+
+            // ログは50個まで
+            if (keys.length > 50) {
+                delete messages[keys[0]];
+            }
+            set(messageNode, JSON.stringify(messages));
+        });
+        document.getElementById('message').value = '';
+    });
+
+    //チャット欄更新
+    let messageNode = ref(db, 'common/message');
+    onValue(messageNode, (snapshot) => {
+        let messages = snapshot.val() ? JSON.parse(snapshot.val()) : {};
+        let messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+
+        let keys = Object.keys(messages);
+        keys.sort((a, b) => {
+            let timestampA = parseInt(a.split('_')[1]);
+            let timestampB = parseInt(b.split('_')[1]);
+            return timestampA - timestampB;
+        });
+
+        // Reverse the order of keys
+        keys.reverse();
+        for (let i in keys) {
+            let messageDiv = document.createElement('div');
+            let splitKey = keys[i].split('_');
+            let username = splitKey[0];
+            messageDiv.textContent = username + ': ' + messages[keys[i]];
+            messagesDiv.appendChild(messageDiv);
+        }
+    });
+
+    //ログ欄更新
+    let logMessageNode = ref(db, 'common/log');
+    onValue(logMessageNode, (snapshot) => {
+        let logMessages = snapshot.val() ? JSON.parse(snapshot.val()) : {};
+        let logMessagesDiv = document.getElementById('logMessages');
+        logMessagesDiv.innerHTML = '';
+
+        let keys = Object.keys(logMessages);
+        keys.sort((a, b) => {
+            let timestampA = parseInt(a.split('_')[1]);
+            let timestampB = parseInt(b.split('_')[1]);
+            return timestampA - timestampB;
+        });
+
+        // Reverse the order of keys
+        keys.reverse();
+        for (let i in keys) {
+            let logMessageDiv = document.createElement('div');
+            let splitKey = keys[i].split('_');
+            let username = splitKey[0];
+            let timestamp = new Date(parseInt(splitKey[1]));
+            let formattedTimestamp = timestamp.getFullYear() + '/' +
+                            (timestamp.getMonth() + 1) + '/' +
+                            timestamp.getDate() + ' ' +
+                            ('0' + timestamp.getHours()).slice(-2) + ':' +
+                            ('0' + timestamp.getMinutes()).slice(-2) + ':' +
+                            ('0' + timestamp.getSeconds()).slice(-2);
+
+            logMessageDiv.textContent = formattedTimestamp + ': ' + username + 'が' + logMessages[keys[i]];
+            logMessagesDiv.appendChild(logMessageDiv);
+
+        }
+    });
+}, (error) => {
+    console.log(error);
+});
+
+
+
+</script>
+
+<script>
+
+//チャット表示
+function chatOpen(){
+  document.getElementById('chatWindow').style.display = 'block';
+};
+//チャット非表示
+function chatClose(){
+  document.getElementById('chatWindow').style.display = 'none';
+};
+
+//ログ表示
+function logOpen(){
+  document.getElementById('logWindow').style.display = 'block';
+};
+//ログ非表示
+function logClose(){
+  document.getElementById('logWindow').style.display = 'none';
+};
+
+//文字数カウント
+function updateCharacterCount() {
+        let inputText = document.getElementById('message').value;
+        let charCount = document.getElementById('char-count');
+        charCount.textContent = inputText.length + '/140文字';
+}
+
+	// ダブルタップ禁止
+	window.addEventListener('touchstart', function (event) {
+	    if (event.touches.length > 1) {
+	        event.preventDefault();
+	    }
+	}, { passive: false });
+
+	let lastTouchEnd = 0;
+	window.addEventListener('touchend', function (event) {
+	    const now = Date.now();
+	    if (now - lastTouchEnd <= 300) {
+	        event.preventDefault();
+	    }
+	    lastTouchEnd = now;
+	}, false);
+
+</script>
+
+</html>

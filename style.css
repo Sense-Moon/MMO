@@ -1,0 +1,29 @@
+body {
+	margin: 0;
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 99vh;
+	font-family: serif;
+	background-color: #0B1013;
+	overflow: hidden;
+	color: #102431;
+}
+  
+/*スクロールバー非表示*/
+::-webkit-scrollbar {
+	display: none;
+}
+body {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+button {
+	font-family: serif;
+	font-size:7.2vw;
+	font-style: bold;
+}
+

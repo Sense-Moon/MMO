@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+
+.home, .tansaku, .kyouka, .kyukei,.signOut, .status, .data-box, .status-box {
+  position: absolute;
+  background-color:#f7f5f4;
+  box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+  color: #102431;
+  text-shadow: 1px 1px 2px #000000; 
+  border: none;
+}
+
+.home {
+  width: 100vmin;
+  height: calc(100vmin * 1.5); 
+  max-width: 640px;
+  max-height: 960px;
+  background-image: url(./img/background/home-crop.png);
+  background-size: cover;
+  overflow-y: hidden;
+}
+
+.tansaku, .kyouka, .kyukei {
+  width: 20%;
+  height: 13%;
+  bottom: 5%;
+}
+
+.tansaku { left: 10%; }
+.kyouka { left: 40%; }
+.kyukei { right: 10%; }
+
+.status{
+  width: 20%;
+  height: 13%;
+  top: 63%;
+  left: 70%;
+  border-radius: 50%;
+}
+.signOut{
+  width: 20%;
+  height: 13%;
+  top: 63%;
+  right: 70%;
+  border-radius: 50%;
+}
+
+.chara {
+  width: 60%;
+  height: 80%;
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  border:1px #000;
+}
+
+.chara img {
+  height: 100%;
+  animation: breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.005); }
+}
+
+.data-box {
+  width:80%;
+  height:10%;
+  top:6%;
+  opacity: 1;
+  border-radius: 10px;
+  left: 10%;
+  font-size:7.2vw;
+  line-height: 5%;
+  text-align: center;
+}
+
+.login-btn{
+  font-size:24px;
+  height: 48px;
+  margin-top: 10px;
+}
+
+#login-box {
+  position: absolute;
+  display: block;
+  padding: 40%;
+  text-align: center;
+}
+
+.status-box{
+  width: 90%;
+  height: 90%;
+  overflow-y: scroll;
+  background-color:#f7f5f4;
+  position: absolute;
+  left: 5%;
+  top: 5%;
+  padding: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 6vw;
+}
+.close{
+  z-index: 2;
+  width: 10%;
+  height: 6%;
+  bottom: 5%;
+  font-weight: bold;
+  position: absolute;
+  top: 4.5%;
+  right: 3%;
+  border: none;
+  background-color: transparent;
+  color: #102431;
+}
+
+@media (min-width: 640px) {
+	.status-box{
+		font-size: 38px;
+	}
+  .data-box, button {
+		font-size: 46px;
+		line-height: 5%;
+	}
+  .close{
+    font-size: 46px;
+    top: 5.5%;
+    right: 3%;
+  }
+}
+
+
+</style>
+
+<body>
+<div id="login-box" style="display:none" >
+  <input type="text" id="username" placeholder="Username">
+  <br>
+  <input type="password" id="password" placeholder="Password">
+  <br>
+  <button id="login" class="login-btn">ログイン</button>
+</div>
+
+<div class="home" id="home" style="display: none;">
+
+  <div class="data-box">
+    <p id="data-now" class="data"></p>
+  </div>
+
+  <div class="chara">
+    <img src=""></img>
+  </div>
+
+    <button class="status" onclick="statusOpen()">確認</button>
+    <button class="tansaku" onclick="location.href='map.html'">探索</button>
+    <button class="kyouka" onclick="location.href='kyouka.html'">強化</button>
+    <button class="kyukei" onclick="location.href='kyukei.html'">休憩</button>
+    <button class="signOut" id="signOut" >退出</button>
+
+  <div class="status-window" id="statusWindow" style="display:none">
+    <div class="status-box" id="statusBox" ></div>  
+    <button class="close" id="closeButton" onclick="statusClose()">閉</button>
+  </div>
+
+</div>
+</body>
+
+
+<script type="module">
+const firebaseConfig = {
+apiKey: "AIzaSyAKvoX9I14uUOj7dYEItVXJGr-gNMz1xfc",
+  authDomain: "testgame-5940a.firebaseapp.com",
+  databaseURL: "https://testgame-5940a-default-rtdb.firebaseio.com",
+  projectId: "testgame-5940a",
+  storageBucket: "testgame-5940a.appspot.com",
+  messagingSenderId: "189198151711",
+  appId: "1:189198151711:web:4e67860e2222d2eb10252a",
+  measurementId: "G-Y0V1D8CHZJ"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, setPersistence, signInWithEmailAndPassword,onAuthStateChanged,GoogleAuthProvider,browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, get,push,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+  // The persistence has been set to 'local'
+})
+.catch((error) => {
+  console.error('Failed to set persistence:', error);
+});
+
+//ログイン
+document.getElementById('login').addEventListener('click', function() {
+  let username = document.getElementById('username').value;
+  let password = document.getElementById('password').value;
+
+  signInWithEmailAndPassword(auth, username + '@example.com', password)
+.then(() => {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('username').style.display = 'none';
+  document.getElementById('password').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+})
+.catch((error) => {
+  alert('データが間違ってるか、ユーザー登録してない ');
+});
+});
+
+// ログアウト
+async function signOut(auth) {
+  await auth.signOut();
+}
+document.getElementById('signOut').addEventListener('click', async function() {
+try {
+  await signOut(auth);
+  document.getElementById('login').style.display = 'block';
+  document.getElementById('username').style.display = 'block';
+  document.getElementById('password').style.display = 'block';
+  document.getElementById('home').style.display = 'none';
+  window.location.reload();
+} catch (error) {
+  console.error('ログアウト失敗:', error);
+}
+});
+
+
+// ページのロード時にログインしてたらホームを表示し、ステータスに変数を追加
+onAuthStateChanged(auth, (user) => {
+if (user) {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('username').style.display = 'none';
+  document.getElementById('password').style.display = 'none';
+  document.getElementById('home').style.display = 'block'; 
+  console.log('LOGIN');
+  
+  let statusName = 'status/' + user.displayName;
+  let statusRef = ref(db, statusName); 
+
+  // 性別と職業のマッピング
+  const sexMap = {'male': '男', 'female': '女'};
+  const jobMap = {'sword': '浪人', 'wizard': '道士', 'fighter': '修行僧', 'thief': '隠密'};
+
+  // ステータス＝(基礎値  *　レベル補正　* 職業補正) + 装備 + 加護 + 五行 +　霊薬
+  // 基礎値
+  const baseValues = {HP: 50, ATK: 20, DEF: 10, AGI: 10};
+  // 職業補正
+  const jobCorrections = {
+    sword: {HP: 1.0, ATK: 1.0, DEF: 1.0, AGI: 1.0},
+    wizard: {HP: 0.8, ATK: 1.4, DEF: 0.8, AGI: 1.0},
+    fighter: {HP: 1.2, ATK: 0.8, DEF: 1.2, AGI: 0.8},
+    thief: {HP: 0.8, ATK: 1.2, DEF: 0.8, AGI: 1.2}
+  };
+
+  // 中の黄龍:1日ごとに、全ステータス+3
+  const start = new Date('2024-01-14');// 黄龍の加護開始日 
+  const now = new Date();
+  const daysKago = Math.floor((now - start) / (1000 * 60 * 60 * 24));// 黄龍の加護の日数
+  // 五行
+  // 5レベルごとに、いづれかの五行レベルを上げられる。
+  // 最大+5まで。
+  // 木:体力+5,体力+10,体力+20,体力+30,体力+50
+  // 火:攻撃+3,攻撃+5,攻撃+10,攻撃+15,攻撃+25
+  // 土:防御+3,防御+5,防御+10,防御+15,防御+25
+  // 金:俊敏+3,俊敏+5,俊敏+10,俊敏+15,俊敏+25
+  // 水:体力+10,攻撃+5,防御+5,俊敏+5,体力+30と他+15
+  // 五行の加護の値
+  const gogyouValues = {
+      'moku': [0, 5, 10, 20, 30, 50],
+      'hi': [0, 3, 5, 10, 15, 25],
+      'do': [0, 3, 5, 10, 15, 25],
+      'kin': [0, 3, 5, 10, 15, 25],
+      'sui': [0, 10, 5, 5, 5, 30]
+  };
+
+  // アイテムを読み込む
+  const items = {
+      "items": [
+        {
+          "id": 0,
+          "name": " ",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 1,
+          "name": "薬草",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 2,
+          "name": "丸薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 3,
+          "name": "秘薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 4,
+          "name": "体力の霊薬",
+          "HP": 1,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 5,
+          "name": "攻撃の霊薬",
+          "HP": 0,
+          "ATK": 1,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 6,
+          "name": "防御の霊薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 1,
+          "AGI": 0
+        },
+        {
+          "id": 7,
+          "name": "俊敏の霊薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 1
+        },
+        {
+          "id": 8,
+          "name": "長刀",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 9,
+          "name": "大刀",
+          "HP": 5,
+          "ATK": 20,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 10,
+          "name": "鬼頭刀",
+          "HP": 20,
+          "ATK": 50,
+          "DEF": 20,
+          "AGI": 0
+        },
+        {
+          "id": 11,
+          "name": "七星剣",
+          "HP": 100,
+          "ATK": 100,
+          "DEF": 30,
+          "AGI": 20
+        },
+        {
+          "id": 12,
+          "name": "霊符",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 13,
+          "name": "結界符",
+          "HP": 5,
+          "ATK": 25,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 14,
+          "name": "滅魔符",
+          "HP": 10,
+          "ATK": 75,
+          "DEF": 5,
+          "AGI": 5
+        },
+        {
+          "id": 15,
+          "name": "天照符",
+          "HP": 50,
+          "ATK": 150,
+          "DEF": 25,
+          "AGI": 25
+        },
+        {
+          "id": 16,
+          "name": "手甲",
+          "HP": 0,
+          "ATK": 3,
+          "DEF": 3,
+          "AGI": 0
+        },
+        {
+          "id": 17,
+          "name": "鉄甲",
+          "HP": 20,
+          "ATK": 20,
+          "DEF": 10,
+          "AGI": 0
+        },
+        {
+          "id": 18,
+          "name": "虎爪",
+          "HP": 50,
+          "ATK": 50,
+          "DEF": 25,
+          "AGI": 10
+        },
+        {
+          "id": 19,
+          "name": "黄龍牙",
+          "HP": 100,
+          "ATK": 80,
+          "DEF": 50,
+          "AGI": 20
+        },
+        {
+          "id": 20,
+          "name": "匕首",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 21,
+          "name": "飛刀",
+          "HP": 0,
+          "ATK": 20,
+          "DEF": 0,
+          "AGI": 10
+        },
+        {
+          "id": 22,
+          "name": "影鎌",
+          "HP": 0,
+          "ATK": 50,
+          "DEF": 0,
+          "AGI": 20
+        },
+        {
+          "id": 23,
+          "name": "幽冥刃",
+          "HP": 15,
+          "ATK": 120,
+          "DEF": 15,
+          "AGI": 50
+        },
+        {
+          "id": 24,
+          "name": "竹の鎧",
+          "HP": 10,
+          "ATK": 0,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 25,
+          "name": "虎皮の鎧",
+          "HP": 30,
+          "ATK": 5,
+          "DEF": 10,
+          "AGI": 0
+        },
+        {
+          "id": 26,
+          "name": "龍鱗の鎧",
+          "HP": 50,
+          "ATK": 15,
+          "DEF": 30,
+          "AGI": 0
+        },
+        {
+          "id": 27,
+          "name": "竹の服",
+          "HP": 5,
+          "ATK": 0,
+          "DEF": 3,
+          "AGI": 3
+        },
+        {
+          "id": 28,
+          "name": "虎皮の服",
+          "HP": 20,
+          "ATK": 3,
+          "DEF": 10,
+          "AGI": 10
+        },
+        {
+          "id": 29,
+          "name": "龍鱗の服",
+          "HP": 40,
+          "ATK": 10,
+          "DEF": 20,
+          "AGI": 30
+        }
+      ]
+    }
+
+  // ステータスを算出する関数
+  function calculateStatus(level, job, weaponId, weaponLevel, armorId, armorLevel, yonkami, gogyou, reiyaku) {
+    let status = {};
+    // 武器と防具を見つける
+    let weapon = items.items.find(item => item.id === weaponId);
+    let armor = items.items.find(item => item.id === armorId);
+
+    if (!weapon) {
+      console.error('Weapon not found:', weaponId);
+      return;
+    }
+
+    if (!armor) {
+      console.error('Armor not found:', armorId);
+      return;
+    }
+    for (let key in baseValues) {
+      // 武器と防具の補正値を計算　元の装備ステータスx0.1x強化レベル+強化レベル（小数点切り上げ）
+      let weaponCorrection =  Math.ceil(weapon[key] * 0.1 * weaponLevel + weaponLevel);
+      let armorCorrection = Math.ceil(armor[key] * 0.1 * armorLevel + armorLevel);
+
+      // 基礎値 + 武器の値 + (武器の補正値の累計) + 防具の値 +(防具の補正値の累計)  + 黄龍の加護 + 四神の加護 + 五行の加護 + 霊薬の効果
+
+      let value = baseValues[key] + (weapon[key] + weaponCorrection) + (armor[key] + armorCorrection)
+      + (key === 'HP' ? 3 * daysKago : 1 * daysKago) //黄龍の加護はHP+3,他+1
+      + (key === 'ATK' ? 1 * yonkami.seiryu : 0) // 青龍の加護は+1
+      + (key === 'HP' ? 1 * yonkami.suzaku : 0) // 朱雀の加護は+3
+      + (key === 'AGI' ? 1 * yonkami.byakko : 0) // 白虎の加護は+1
+      + (key === 'DEF' ? 1 * yonkami.genbu : 0); // 玄武の加護は+1
+
+      // 五行の加護を追加
+      value += (key === 'HP' ? gogyouValues['moku'][gogyou.moku] : 0) + (key === 'ATK' ? gogyouValues['hi'][gogyou.hi] : 0) + (key === 'DEF' ? gogyouValues['do'][gogyou.do] : 0) + (key === 'AGI' ? gogyouValues['kin'][gogyou.kin] : 0);
+      if (gogyou.sui === 1 && key === 'HP') {
+        value += 10;
+      } else if (gogyou.sui === 2 && key === 'ATK') {
+        value += 5;
+      } else if (gogyou.sui === 3 && key === 'DEF') {
+        value += 5;
+      } else if (gogyou.sui === 4 && key === 'AGI') {
+        value += 5;
+      } else if (gogyou.sui === 5) {
+        if (key === 'HP') {
+          value += 30;
+        } else {
+          value += 15;
+        }
+      }
+      // 霊薬の効果を追加
+      value += reiyaku[key + '_power'] || 0;
+      status[key] = Math.floor(value * Math.pow(1.1, level - 1) * jobCorrections[job][key]);
+    }
+    return status;
+  }
+
+  // コモンデータをFBから取得
+  let commonRef = ref(db, 'common');
+  get(commonRef)
+  .then((snapshot) => {
+    if (snapshot.exists()) {
+      var yonkami = snapshot.val();
+
+      // ユーザーデータをFBから取得
+      get(statusRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+
+              // gogyouオブジェクトを作成
+              let gogyou = {
+                moku: Number(data.gogyou_moku),
+                hi: Number(data.gogyou_hi),
+                do: Number(data.gogyou_do),
+                kin: Number(data.gogyou_kin),
+                sui: Number(data.gogyou_sui)
+              };
+
+              // reiyakuオブジェクトを作成
+              let reiyaku = {
+                HP_power: data.reiyaku_HP_power,
+                ATK_power: data.reiyaku_ATK_power,
+                DEF_power: data.reiyaku_DEF_power,
+                AGI_power: data.reiyaku_AGI_power
+              };
+
+              // 武器と防具のIDと名前を取得
+              let weaponId = data.weapon;
+              let armorId = data.armor;
+              let weaponName = items.items.find(item => item.id === weaponId).name;
+              let armorName = items.items.find(item => item.id === armorId).name;
+
+              // ステータスを計算
+              let status = calculateStatus(data.level, data.job, weaponId, data.weaponLevel, armorId, data.armorLevel, yonkami, gogyou, reiyaku);
+              // NextEXPを計算
+              function calculateNextEXP(n) {
+                let NextEXP = Math.round((10 * Math.pow(1.15, n) * (Math.pow(1.15,n) - 1) / 0.15));
+                return NextEXP;
+              }
+              let nextEXP = calculateNextEXP(data.level);
+              
+              // 性別と職業に合わせてキャラ画像変更
+              let imgElement = document.querySelector(".chara img");
+              let charaPath = './img/chara/' + data.job + '_' + data.sex + '.png'
+              imgElement.src = charaPath;
+
+	        // HTMLを生成
+	        let statusHtml = '【' + user.displayName + '】' + ' ' + 'レベル' +  data.level  + '<br>' +
+	          '転生回数:' + data.tensei + '<br>' +
+	          '性別:' + sexMap[data.sex] + '<br>' +
+	          '木:' + data.gogyou_moku + ',火:' + data.gogyou_hi + ',土:' + data.gogyou_do + ',金:' + data.gogyou_kin + ',水:' + data.gogyou_sui + '<br>' +
+	          '所持金:' + data.money + '元<br>' +
+	          '職業:' + jobMap[data.job] + '<br>' +
+	          '現在経験値:' + data.EXP + '<br>' +
+	          '経験値必要量:' + nextEXP + '<br>' +
+	          '武器:' + weaponName + '+' + data.weaponLevel + '<br>' +
+	          '防具:' + armorName + '+' + data.armorLevel +  '<br>';
+	        
+          // ステータスのキーと日本語の名前のマッピング
+          const statusNames = {
+            'HP': '体力',
+            'ATK': '攻撃',
+            'DEF': '防御',
+            'AGI': '俊敏'
+          };
+
+          // 各ステータスを追加
+          for (let key in status) {
+            let statusName = statusNames[key] || key;  // キーに対応する日本語の名前を取得、存在しない場合はキーをそのまま使用
+            statusHtml += statusName + ':' + status[key] + '(+' + data['reiyaku_' + key + '_power'] + ')<br>';
+          }
+	        // HTMLを表示
+	        const statusBox = document.getElementById('statusBox');
+	        statusBox.innerHTML = statusHtml;
+          } else {
+            console.log("読み取りエラー");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      console.log("読み取りエラー");
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+  } else {
+  document.getElementById('login-box').style.display = 'block';
+  document.getElementById('username').style.display = 'block';
+  document.getElementById('password').style.display = 'block';
+  document.getElementById('home').style.display = 'none'; 
+  }
+
+});
+
+</script>
+
+<script>
+//現在時刻を表示
+const days = ['日', '月', '火', '水', '木', '金', '土'];
+function displayTime() {
+  let now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth() + 1; // JavaScriptの月は0から始まる
+  let date = now.getDate();
+  let day = days[now.getDay()];
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  month = ('0' + month).slice(-2);
+  date = ('0' + date).slice(-2);
+  hours = ('0' + hours).slice(-2);
+  minutes = ('0' + minutes).slice(-2);
+  document.getElementById('data-now').textContent = month + '月' + date + '日(' + day + ') ' + hours + '時' + minutes + '分';
+}
+
+setInterval(displayTime, 1000);
+
+//ステータス表示
+function statusOpen(){
+  document.getElementById('statusWindow').style.display = 'block';
+};
+//ステータス非表示
+function statusClose(){
+  document.getElementById('statusWindow').style.display = 'none';
+};
+
+	// ダブルタップ禁止
+	window.addEventListener('touchstart', function (event) {
+	    if (event.touches.length > 1) {
+	        event.preventDefault();
+	    }
+	}, { passive: false });
+
+	let lastTouchEnd = 0;
+	window.addEventListener('touchend', function (event) {
+	    const now = Date.now();
+	    if (now - lastTouchEnd <= 300) {
+	        event.preventDefault();
+	    }
+	    lastTouchEnd = now;
+	}, false);
+</script>
+
+</html>

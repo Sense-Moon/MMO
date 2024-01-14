@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+  </head>
+  <body>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <label for="job-select">職業:</label>
+    <select name="jobs" id="job-select">
+      <option value="sword">浪人</option>
+      <option value="wizard">道士</option>
+      <option value="fighter">修行僧</option>
+      <option value="thief">隠密</option>
+    </select>
+    <label for="sex-select">性別:</label>
+    <select name="sexes" id="sex-select">
+      <option value="male">男</option>
+      <option value="female">女</option>
+    </select>
+    <button id="register">登録</button>
+    <div id="message"></div>
+
+    <script type="module">
+      var firebaseConfig = {
+        apiKey: "AIzaSyAKvoX9I14uUOj7dYEItVXJGr-gNMz1xfc",
+        authDomain: "testgame-5940a.firebaseapp.com",
+        databaseURL: "https://testgame-5940a-default-rtdb.firebaseio.com",
+        projectId: "testgame-5940a",
+        storageBucket: "testgame-5940a.appspot.com",
+        messagingSenderId: "189198151711",
+        appId: "1:189198151711:web:4e67860e2222d2eb10252a",
+        measurementId: "G-Y0V1D8CHZJ"
+      };
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getAuth, createUserWithEmailAndPassword,updateProfile  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      var app = initializeApp(firebaseConfig);
+      var auth = getAuth(app);
+      var db = getDatabase(app);
+
+      document.getElementById('register').addEventListener('click', function() {
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+        var jobName = document.getElementById('job-select').value;
+        var sexName = document.getElementById('sex-select').value;
+        var messageDiv = document.getElementById('message');
+
+        let jobValues = {
+          'sword': {syokiWapon: 8, syokiArmor: 24},
+          'wizard': {syokiWapon: 12, syokiArmor: 27},
+          'fighter': {syokiWapon: 16, syokiArmor: 24},
+          'thief': {syokiWapon: 20, syokiArmor: 27}
+        };
+
+        var syokiWapon = jobValues[jobName].syokiWapon;
+        var syokiArmor = jobValues[jobName].syokiArmor;
+
+        get(ref(db, 'usernames/' + username)).then((snapshot) => {
+          if (snapshot.exists()) {
+            messageDiv.textContent = 'その名前は登録済み';
+          } else {
+            createUserWithEmailAndPassword(auth, username + '@example.com', password)
+              .then((userCredential) => {
+                // ユーザー名をFirebaseの認証システムに保存
+                updateProfile(userCredential.user, {
+                  displayName: username
+                });
+
+                set(ref(db, 'usernames/' + username), userCredential.user.uid);
+                messageDiv.textContent = '登録完了。　名前とパスワードは各自で保存してね。　'+'ユーザー名:'+ username + '　パスワード:' + password ;
+
+                // ユーザー名とステータスを設定
+                var status = {
+                  level: 1,
+                  tensei: 0,
+                  sex:sexName,
+                  gogyou_point:0,
+                  gogyou_moku: 0,
+                  gogyou_hi: 0,
+                  gogyou_do: 0,
+                  gogyou_kin: 0,
+                  gogyou_sui: 0,
+                  reiyaku_HP_count: 0,
+                  reiyaku_ATK_count: 0,
+                  reiyaku_DEF_count: 0,
+                  reiyaku_AGI_count: 0,
+                  reiyaku_HP_power: 0,
+                  reiyaku_ATK_power: 0,
+                  reiyaku_DEF_power: 0,
+                  reiyaku_AGI_power: 0,
+                  money: 100,
+                  job: jobName,
+                  EXP: 0,
+                  weapon: syokiWapon,
+                  armor: syokiArmor,
+                  weaponLevel: 0,
+                  armorLevel: 0,
+                  sitiseiken: 0,
+                  tensyouhu: 0,
+                  kouryuga: 0,
+                  yumeizin: 0,
+                  shopLevel: 1,
+                };
+                // データを保存
+                set(ref(db, 'status/' + username), status);
+
+              })
+              .catch((error) => {
+                messageDiv.textContent = 'これ送って（）　→　エラー: ' + error.message;
+              });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

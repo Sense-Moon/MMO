@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+
+.map,.start-btn{
+  position: absolute;
+  background-color:#f7f5f4;
+  box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+  color: #102431;
+  text-shadow: 1px 1px 2px #000000; 
+  border: none;
+}
+
+.map,.dungeon-box ,.dungeon,#battleInfo{
+  width: 100vmin;
+  height: calc(100vmin * 1.5); 
+  max-width: 640px;
+  max-height: 960px;
+  background-image: url(./img/background/map.png);
+  background-size: cover;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.dungeon-box, .dungeon,#battleInfo {
+  background-image: none;
+}
+
+
+
+.dungeon-box{
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  background-color:#f7f5f4;
+  position: absolute;
+  padding-top: 3%;
+  padding-left: 1%;
+  padding-right: 1%;
+  padding-bottom: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 6vw;
+  text-align: center;
+  line-height: 2;
+}
+
+.dungeon{
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  background-color: #102431;
+  position: absolute;
+  padding-top: 3%;
+  padding-left: 1%;
+  padding-right: 1%;
+  padding-bottom: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 6vw;
+  text-align: center;
+  line-height: 2;
+
+}
+
+#battleInfo{
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  background-color: #102431;
+  position: absolute;
+  padding-top: 3%;
+  padding-left: 1%;
+  padding-right: 1%;
+  padding-bottom: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 5vw;
+  text-align: center;
+  line-height: 2;
+  color:#f7f5f4
+
+}
+
+
+.close{
+  z-index: 2;
+  width: 10%;
+  height: 6%;
+  bottom: 5%;
+  font-weight: bold;
+  position: absolute;
+  top: 0%;
+  right: 3%;
+  border: none;
+  background-color: transparent;
+  color: #102431;
+}
+.close-map{
+  z-index: 2;
+  width: 10%;
+  height: 6%;
+  bottom: 5%;
+  font-weight: bold;
+  position: absolute;
+  top: 0%;
+  right: 3%;
+  border: none;
+  background-color: transparent;
+  color: #102431;
+}
+
+.title{
+    font-size: 8vw;
+}
+
+span{
+    font-size: 5.5vw;
+}
+
+
+.higasi,.minami,.nisi,.kita,.naka{
+    position: absolute;
+    border: none;
+    width: 0px;
+    height: 0px;
+    font-size: 8vw;
+    color:#102431;
+    background: transparent;
+    -webkit-animation:blink 2.5s ease-in-out infinite alternate;
+    -moz-animation:blink 2.5s ease-in-out infinite alternate;
+    animation:blink 2.5s ease-in-out infinite alternate;
+} 
+
+.higasi{
+    top: 40%;
+    right: 17%;
+
+}
+
+.minami{
+    top: 78%;
+    right: 18%;
+}
+
+.nisi{
+    top: 57%;
+    right: 83%;
+
+}
+
+.kita{
+    top: 7%;
+    right: 51%;
+
+}
+
+.naka{
+    top: 42%;
+    right: 48%;
+
+}
+
+.start-btn {
+    width: 40%;
+    height: 10%;
+    position: absolute;
+    left: 30%;
+    top: 81%;
+    background-color: #102431;
+    color: #f7f5f4;
+    font-weight: bold;
+}
+
+@-webkit-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@-moz-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+
+
+.enemy-img {
+    width: 60%;
+    height: 60%;
+    position: absolute;
+    top: 10%;
+    left: 20%;
+
+}
+
+.enemy-img img {
+  width: 100%;
+  box-shadow:5px 5px 10px 8px #000, inset 0 0 10px #000;
+}
+
+.attack, .potion {
+    width: 80%;
+    height: 40%;
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    font-weight: bold;
+    box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+    color: #102431;
+    text-shadow: 1px 1px 2px 2px #000000; 
+    border: none;
+}
+.nextButton{
+    width: 40%;
+    height: 10%;
+    position: absolute;
+    top: 80%;
+    left: 30%;
+    font-weight: bold;
+    box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+    color: #102431;
+    text-shadow: 1px 1px 2px 2px #000000;
+    border: none;
+}
+
+#infoHP,#infoPotion{
+    position: absolute;
+    width: 40%;
+    height: 20%;
+    top: 75%;
+    text-align: center;
+    color: #f7f5f4;
+    font-size: 32px;
+}
+#infoHP{
+    left: 10%;
+}
+#infoPotion{
+    right: 10%;
+}
+
+#enemyName {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #f7f5f4;
+    font-size: 7.5vw;
+    text-shadow: 1px 1px 2px #000000; 
+    top:1%;
+}
+
+@media (min-width: 640px) {
+  button {
+	font-size: 46px;
+	line-height: 5%;
+	}
+
+  .close-map{
+    font-size: 46px;
+    top: 3%;
+  }
+  .close{
+    font-size: 46px;
+    top: 3%;
+  }
+
+  .soubi-box, .kitou-box{
+    font-size: 46px;
+  }
+  .title{
+    font-size: 52px;
+  }
+  .reiyaku-button, .gogyou-button,.tensei-button{
+    font-size:40px;
+  }
+  .reiyaku-num{
+    font-size: 32px;
+  }
+  select{
+    font-size: 36px;
+  }
+  .map-btn,.tousi-btn{
+    line-height:unset;
+    font-size:40px;
+  }
+  span{
+    font-size: 36px;
+  }
+  .dungeon-box{
+    font-size: 38px;
+  }
+  #enemyName {
+    font-size: 48px;
+  }
+  .higasi,.minami,.nisi,.kita,.naka{
+    font-size: 48px;
+  } 
+    .higasi{
+        top: 44%;
+        right: 17%;
+
+    }
+
+    .minami{
+        top: 82%;
+        right: 18%;
+    }
+
+    .nisi{
+        top: 61%;
+        right: 83%;
+
+    }
+
+    .kita{
+        top: 11%;
+        right: 51%;
+
+    }
+
+    .naka{
+        top: 46%;
+        right: 48%;
+
+    }
+    #battleMessage{
+      font-size: 30px;
+    }
+}
+
+
+
+</style>
+
+<body>
+
+
+<div class="map" id="map">
+
+    <button class="close-map" id="closeMap" onclick="location.href='home.html'">戻</button>
+
+    <div id="buttons">
+        <button class="higasi" onclick="higasiOpen()">●</button>
+        <button class="minami" onclick="minamiOpen()">●</button>
+        <button class="nisi" onclick="nisiOpen()">●</button>
+        <button class="kita" onclick="kitaOpen()">●</button>
+        <button class="naka" onclick="nakaOpen()">●</button>
+    </div>
+
+    <div class="dungeon-box" id="higasiBox" style="display:none">
+
+        <span class="title">【渾沌】</span>
+        <br>
+        <span>討伐数:</span>
+        <span id="seiryuPower">n</span>
+        <br>
+        <span>現在HP:</span>
+        <span id="kontonHP">150000</span>
+        <span>/150000</span>
+        <br>
+
+        <div id="kagoBoxHigasi">
+          <div class="title" >【加護】</div>
+          <span>黄龍の加護:</span><span id="kagoOuryu">体力+n,他+n,</span>
+          <br>
+          <span>朱雀の加護:</span><span id="kagoSuzaku">体力+n,</span>
+          <br>
+          <span>青龍の加護:</span><span id="kagoSeiryu">攻撃+n,</span>
+          <br>
+          <span>玄武の加護:</span><span id="kagoGenbu">防御+n,</span>
+          <br>
+          <span>白虎の加護:</span><span id="kagoByakko">俊敏+n,</span>
+          <br>
+        </div>
+
+        <button class="start-btn" onclick="battleStart('higasi')">出発</button>
+
+        <button class="close" onclick="higasiClose()">戻</button>
+    </div>
+
+    <div class="dungeon-box" id="minamiBox" style="display:none">
+
+        <span class="title">【窮奇】</span>
+        <br>
+        <span>討伐数:</span>
+        <span id="suzakuPower">n</span>
+        <br>
+        <span>現在HP:</span>
+        <span id="kyukiHP">100000</span>
+        <span>/100000</span>
+        <br>
+
+        <div id="kagoBoxMinami">
+          <div class="title" >【加護】</div>
+          <span>黄龍の加護:</span><span id="kagoOuryu">体力+n,他+n,</span>
+          <br>
+          <span>朱雀の加護:</span><span id="kagoSuzaku">体力+n,</span>
+          <br>
+          <span>青龍の加護:</span><span id="kagoSeiryu">攻撃+n,</span>
+          <br>
+          <span>玄武の加護:</span><span id="kagoGenbu">防御+n,</span>
+          <br>
+          <span>白虎の加護:</span><span id="kagoByakko">俊敏+n,</span>
+          <br>
+        </div>
+
+        <button class="start-btn" onclick="battleStart('minami')">出発</button>
+
+        <button class="close" onclick="minamiClose()">戻</button>
+    </div>
+
+    <div class="dungeon-box" id="nisiBox" style="display:none">
+
+        <span class="title">【檮杌】</span>
+        <br>
+        <span>討伐数:</span>
+        <span id="byakkoPower">n</span>
+        <br>
+        <span>現在HP:</span>
+        <span id="toukotuHP">100000</span>
+        <span>/100000</span>
+        <br>
+
+        <div id="kagoBoxNisi">
+          <div class="title" >【加護】</div>
+          <span>黄龍の加護:</span><span id="kagoOuryu">体力+n,他+n,</span>
+          <br>
+          <span>朱雀の加護:</span><span id="kagoSuzaku">体力+n,</span>
+          <br>
+          <span>青龍の加護:</span><span id="kagoSeiryu">攻撃+n,</span>
+          <br>
+          <span>玄武の加護:</span><span id="kagoGenbu">防御+n,</span>
+          <br>
+          <span>白虎の加護:</span><span id="kagoByakko">俊敏+n,</span>
+          <br>
+        </div>
+
+        <button class="start-btn" onclick="battleStart('nisi')">出発</button>
+
+        <button class="close" onclick="nisiClose()">戻</button>
+    </div>
+
+    <div class="dungeon-box" id="kitaBox" style="display:none">
+
+        <span class="title">【饕餮】</span>
+        <br>
+        <span>討伐数:</span>
+        <span id="genbuPower">n</span>
+        <br>
+        <span>現在HP:</span>
+        <span id="toutetuHP">100000</span>
+        <span>/100000</span>
+        <br>
+
+        <div id="kagoBoxKita">
+            <div class="title" >【加護】</div>
+            <span>黄龍の加護:</span><span id="kagoOuryu">体力+n,他+n,</span>
+            <br>
+            <span>朱雀の加護:</span><span id="kagoSuzaku">体力+n,</span>
+            <br>
+            <span>青龍の加護:</span><span id="kagoSeiryu">攻撃+n,</span>
+            <br>
+            <span>玄武の加護:</span><span id="kagoGenbu">防御+n,</span>
+            <br>
+            <span>白虎の加護:</span><span id="kagoByakko">俊敏+n,</span>
+            <br>
+        </div>
+
+        <button class="start-btn" onclick="battleStart('kita')">出発</button>
+
+        <button class="close" onclick="kitaClose()">戻</button>
+    </div>
+
+    <div class="dungeon-box" id="nakaBox" style="display:none">
+
+        <span class="title">【黒龍】</span>
+        <br>
+        <span>討伐数:</span>
+        <span id="clear">n</span>
+        <br>
+        <span>現在HP:</span>
+        <span id="kokuryuHP">10000000</span>
+        <span>/10000000</span>
+        <br>
+
+        <div id="kagoBoxNaka">
+          <div class="title" >【加護】</div>
+          <span>黄龍の加護:</span><span id="kagoOuryu">体力+n,他+n,</span>
+          <br>
+          <span>朱雀の加護:</span><span id="kagoSuzaku">体力+n,</span>
+          <br>
+          <span>青龍の加護:</span><span id="kagoSeiryu">攻撃+n,</span>
+          <br>
+          <span>玄武の加護:</span><span id="kagoGenbu">防御+n,</span>
+          <br>
+          <span>白虎の加護:</span><span id="kagoByakko">俊敏+n,</span>
+          <br>
+        </div>
+
+        <button class="start-btn" onclick="battleStart('naka')">出発</button>
+
+        <button class="close" onclick="nakaClose()">戻</button>
+    </div>
+
+</div>
+
+<div class="dungeon" id="dungeon" style="display:none">
+
+    <div class="battle-window" id="battleWindow">
+
+        <div class="enemy-name" id="enemyName">敵の名前</div>
+
+        <div class="enemy-img" id="enemyImgBox">
+            <img src=""></img>
+        </div>
+
+        <div id="infoHP">
+            <span>体力:</span><span id="currentHP">xxx</span><span>/</span><span id="maxHP">yyy</span>
+            <button class="attack" onclick="attack();">攻撃</button>
+        </div>
+
+        <div id="infoPotion">
+            <span>所持数:</span><span id="potionCount">n</span><span>/10</span>
+            <button class="potion" onclick="potion()">回復</button>
+        </div>
+
+    </div>
+
+    <div class="battle-info" id="battleInfo" style="display:none">
+      <div id="battleMessage">
+      </div>
+      <button class="nextButton" id="nextTurn" onclick="nextTurn()">確認</button>
+      <button class="nextButton" id="returnHome" onclick="returnHome()" style="display:none">撤退</button>
+      <button class="nextButton" id="nextFloor" onclick="nextFloor()" style="display:none">次の階層へ</button>
+      <button class="nextButton" id="kikan" onclick="returnHome()" style="display:none">帰還</button>
+    </div>
+</div>
+
+</body>
+
+
+<script type="module">
+const firebaseConfig = {
+apiKey: "AIzaSyAKvoX9I14uUOj7dYEItVXJGr-gNMz1xfc",
+  authDomain: "testgame-5940a.firebaseapp.com",
+  databaseURL: "https://testgame-5940a-default-rtdb.firebaseio.com",
+  projectId: "testgame-5940a",
+  storageBucket: "testgame-5940a.appspot.com",
+  messagingSenderId: "189198151711",
+  appId: "1:189198151711:web:4e67860e2222d2eb10252a",
+  measurementId: "G-Y0V1D8CHZJ"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, setPersistence, signInWithEmailAndPassword,onAuthStateChanged,GoogleAuthProvider,browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, get,push,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+  // The persistence has been set to 'local'
+})
+.catch((error) => {
+  console.error('Failed to set persistence:', error);
+});
+
+
+
+
+//ログインしてたら、ステータスの計算と、各種変数をhtmlに代入
+onAuthStateChanged(auth, (user) => {
+if (user) {
+  
+  let statusName = 'status/' + user.displayName;
+  let statusRef = ref(db, statusName); 
+
+  // 性別と職業のマッピング
+  const sexMap = {'male': '男', 'female': '女'};
+  const jobMap = {'sword': '浪人', 'wizard': '道士', 'fighter': '修行僧', 'thief': '隠密'};
+
+  // ステータス＝(基礎値  *　レベル補正　* 職業補正) + 装備 + 加護 + 五行 +　霊薬
+  // 基礎値
+  const baseValues = {HP: 50, ATK: 20, DEF: 10, AGI: 10};
+  // 職業補正
+  const jobCorrections = {
+    sword: {HP: 1.0, ATK: 1.0, DEF: 1.0, AGI: 1.0},
+    wizard: {HP: 0.8, ATK: 1.4, DEF: 0.8, AGI: 1.0},
+    fighter: {HP: 1.2, ATK: 0.8, DEF: 1.2, AGI: 0.8},
+    thief: {HP: 0.8, ATK: 1.2, DEF: 0.8, AGI: 1.2}
+  };
+
+  // 黄龍
+  const start = new Date('2024-01-14');// 黄龍の加護開始日 
+  const now = new Date();
+  const daysKago = Math.floor((now - start) / (1000 * 60 * 60 * 24));// 黄龍の加護の日数
+  // 五行
+  // 5レベルごとに、いづれかの五行レベルを上げられる。
+  // 最大+5まで。
+  // 木:体力+5,体力+10,体力+20,体力+30,体力+50
+  // 火:攻撃+3,攻撃+5,攻撃+10,攻撃+15,攻撃+25
+  // 土:防御+3,防御+5,防御+10,防御+15,防御+25
+  // 金:俊敏+3,俊敏+5,俊敏+10,俊敏+15,俊敏+25
+  // 水:体力+10,攻撃+5,防御+5,俊敏+5,体力+30と他+15
+  // 五行の加護の値
+  const gogyouValues = {
+      'moku': [0, 5, 10, 20, 30, 50],
+      'hi': [0, 3, 5, 10, 15, 25],
+      'do': [0, 3, 5, 10, 15, 25],
+      'kin': [0, 3, 5, 10, 15, 25],
+      'sui': [0, 10, 5, 5, 5, 30]
+  };
+
+  // アイテムを読み込む
+  const items = {
+      "items": [
+        {
+          "id": 0,
+          "name": " ",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 1,
+          "name": "薬草",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 2,
+          "name": "丸薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 3,
+          "name": "秘薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 4,
+          "name": "体力の霊薬",
+          "HP": 1,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 5,
+          "name": "攻撃の霊薬",
+          "HP": 0,
+          "ATK": 1,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 6,
+          "name": "防御の霊薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 1,
+          "AGI": 0
+        },
+        {
+          "id": 7,
+          "name": "俊敏の霊薬",
+          "HP": 0,
+          "ATK": 0,
+          "DEF": 0,
+          "AGI": 1
+        },
+        {
+          "id": 8,
+          "name": "長刀",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 9,
+          "name": "大刀",
+          "HP": 5,
+          "ATK": 20,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 10,
+          "name": "鬼頭刀",
+          "HP": 20,
+          "ATK": 50,
+          "DEF": 20,
+          "AGI": 0
+        },
+        {
+          "id": 11,
+          "name": "七星剣",
+          "HP": 100,
+          "ATK": 100,
+          "DEF": 30,
+          "AGI": 20
+        },
+        {
+          "id": 12,
+          "name": "霊符",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 13,
+          "name": "結界符",
+          "HP": 5,
+          "ATK": 25,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 14,
+          "name": "滅魔符",
+          "HP": 10,
+          "ATK": 75,
+          "DEF": 5,
+          "AGI": 5
+        },
+        {
+          "id": 15,
+          "name": "天照符",
+          "HP": 50,
+          "ATK": 150,
+          "DEF": 25,
+          "AGI": 25
+        },
+        {
+          "id": 16,
+          "name": "手甲",
+          "HP": 0,
+          "ATK": 3,
+          "DEF": 3,
+          "AGI": 0
+        },
+        {
+          "id": 17,
+          "name": "鉄甲",
+          "HP": 20,
+          "ATK": 20,
+          "DEF": 10,
+          "AGI": 0
+        },
+        {
+          "id": 18,
+          "name": "虎爪",
+          "HP": 50,
+          "ATK": 50,
+          "DEF": 25,
+          "AGI": 10
+        },
+        {
+          "id": 19,
+          "name": "黄龍牙",
+          "HP": 100,
+          "ATK": 80,
+          "DEF": 50,
+          "AGI": 20
+        },
+        {
+          "id": 20,
+          "name": "匕首",
+          "HP": 0,
+          "ATK": 5,
+          "DEF": 0,
+          "AGI": 0
+        },
+        {
+          "id": 21,
+          "name": "飛刀",
+          "HP": 0,
+          "ATK": 20,
+          "DEF": 0,
+          "AGI": 10
+        },
+        {
+          "id": 22,
+          "name": "影鎌",
+          "HP": 0,
+          "ATK": 50,
+          "DEF": 0,
+          "AGI": 20
+        },
+        {
+          "id": 23,
+          "name": "幽冥刃",
+          "HP": 15,
+          "ATK": 120,
+          "DEF": 15,
+          "AGI": 50
+        },
+        {
+          "id": 24,
+          "name": "竹の鎧",
+          "HP": 10,
+          "ATK": 0,
+          "DEF": 5,
+          "AGI": 0
+        },
+        {
+          "id": 25,
+          "name": "虎皮の鎧",
+          "HP": 30,
+          "ATK": 5,
+          "DEF": 10,
+          "AGI": 0
+        },
+        {
+          "id": 26,
+          "name": "龍鱗の鎧",
+          "HP": 50,
+          "ATK": 15,
+          "DEF": 30,
+          "AGI": 0
+        },
+        {
+          "id": 27,
+          "name": "竹の服",
+          "HP": 5,
+          "ATK": 0,
+          "DEF": 3,
+          "AGI": 3
+        },
+        {
+          "id": 28,
+          "name": "虎皮の服",
+          "HP": 20,
+          "ATK": 3,
+          "DEF": 10,
+          "AGI": 10
+        },
+        {
+          "id": 29,
+          "name": "龍鱗の服",
+          "HP": 40,
+          "ATK": 10,
+          "DEF": 20,
+          "AGI": 30
+        }
+      ]
+    }
+
+  // ステータスを算出する関数
+  function calculateStatus(level, job, weaponId, weaponLevel, armorId, armorLevel, yonkami, gogyou, reiyaku) {
+    let status = {};
+    // 武器と防具を見つける
+    let weapon = items.items.find(item => item.id === weaponId);
+    let armor = items.items.find(item => item.id === armorId);
+
+    if (!weapon) {
+      console.error('Weapon not found:', weaponId);
+      return;
+    }
+
+    if (!armor) {
+      console.error('Armor not found:', armorId);
+      return;
+    }
+    for (let key in baseValues) {
+      // 武器と防具の補正値を計算　元の装備ステータスx0.1x強化レベル+強化レベル（小数点切り上げ）
+      let weaponCorrection =  Math.ceil(weapon[key] * 0.1 * weaponLevel + weaponLevel);
+      let armorCorrection = Math.ceil(armor[key] * 0.1 * armorLevel + armorLevel);
+
+      // 基礎値 + 武器の値 + (武器の補正値の累計) + 防具の値 +(防具の補正値の累計)  + 黄龍の加護 + 四神の加護 + 五行の加護 + 霊薬の効果
+      let value = baseValues[key] + (weapon[key] + weaponCorrection) + (armor[key] + armorCorrection)
+      + (key === 'HP' ? 3 * daysKago : 1 * daysKago) //黄龍の加護はHP+3,他+1
+      + (key === 'ATK' ? 1 * yonkami.seiryu : 0) // 青龍の加護は+1
+      + (key === 'HP' ? 3 * yonkami.suzaku : 0) // 朱雀の加護は+3
+      + (key === 'AGI' ? 1 * yonkami.byakko : 0) // 白虎の加護は+1
+      + (key === 'DEF' ? 1 * yonkami.genbu : 0); // 玄武の加護は+1
+
+      // 五行の加護を追加
+      value += (key === 'HP' ? gogyouValues['moku'][gogyou.moku] : 0) + (key === 'ATK' ? gogyouValues['hi'][gogyou.hi] : 0) + (key === 'DEF' ? gogyouValues['do'][gogyou.do] : 0) + (key === 'AGI' ? gogyouValues['kin'][gogyou.kin] : 0);
+      if (gogyou.sui === 1 && key === 'HP') {
+        value += 10;
+      } else if (gogyou.sui === 2 && key === 'ATK') {
+        value += 5;
+      } else if (gogyou.sui === 3 && key === 'DEF') {
+        value += 5;
+      } else if (gogyou.sui === 4 && key === 'AGI') {
+        value += 5;
+      } else if (gogyou.sui === 5) {
+        if (key === 'HP') {
+          value += 30;
+        } else {
+          value += 15;
+        }
+      }
+      // 霊薬の効果を追加
+      value += reiyaku[key + '_power'] || 0;
+      status[key] = Math.floor(value * Math.pow(1.1, level - 1) * jobCorrections[job][key]);
+    }
+    return status;
+  }
+
+  // コモンデータをFBから取得 
+  let commonRef = ref(db, 'common');
+  get(commonRef)
+  .then((snapshot) => {
+    if (snapshot.exists()) {
+      var yonkami = snapshot.val();
+
+      //map.htmlに各種変数を入れる なんかforEachでコード短縮すると上手く行かない（？）
+      document.getElementById('kontonHP').textContent = yonkami.konton;
+      document.getElementById('kyukiHP').textContent = yonkami.kyuki;
+      document.getElementById('toukotuHP').textContent = yonkami.toukotu;
+      document.getElementById('toutetuHP').textContent = yonkami.toutetu;
+      document.getElementById('kokuryuHP').textContent = yonkami.kokuryu;
+      document.getElementById('seiryuPower').textContent = yonkami.seiryu;
+      document.getElementById('suzakuPower').textContent = yonkami.suzaku;
+      document.getElementById('byakkoPower').textContent = yonkami.byakko;
+      document.getElementById('genbuPower').textContent = yonkami.genbu;
+      document.getElementById('clear').textContent = yonkami.clear;
+
+      //kagoBox
+      let kagoHtml= '<div class="title" >【加護】</div>'
+        + '<span>黄龍の加護:</span>' + '<span>体力+' + (daysKago * 3)  + ',他+' + (daysKago * 1) + '</span>'
+        + '<br>'
+        + '<span>朱雀の加護:</span>' + '<span>体力+' + (yonkami.suzaku * 3) + '</span>'
+        + '<br>'
+        + '<span>青龍の加護:</span>' + '<span>攻撃+' + (yonkami.seiryu * 1) + '</span>'
+        + '<br>'
+        + '<span>玄武の加護:</span>' + '<span>防御+' + (yonkami.genbu * 1) + '</span>'
+        + '<br>'
+        + '<span>白虎の加護:</span>' + '<span>俊敏+' + (yonkami.byakko * 1) + '</span>'
+
+      let kagoBoxHigasi = document.getElementById('kagoBoxHigasi');
+      kagoBoxHigasi.innerHTML = kagoHtml;
+      let kagoBoxMinami = document.getElementById('kagoBoxMinami');
+      kagoBoxMinami.innerHTML = kagoHtml;
+      let kagoBoxNisi = document.getElementById('kagoBoxNisi');
+      kagoBoxNisi.innerHTML = kagoHtml;
+      let kagoBoxKita = document.getElementById('kagoBoxKita');
+      kagoBoxKita.innerHTML = kagoHtml;
+      let kagoBoxNaka = document.getElementById('kagoBoxNaka');
+      kagoBoxNaka.innerHTML = kagoHtml;
+
+
+      // ユーザーデータをFBから取得 
+      get(statusRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+
+              // gogyouオブジェクトを作成
+              let gogyou = {
+                moku: Number(data.gogyou_moku),
+                hi: Number(data.gogyou_hi),
+                do: Number(data.gogyou_do),
+                kin: Number(data.gogyou_kin),
+                sui: Number(data.gogyou_sui)
+              };
+
+              // reiyakuオブジェクトを作成
+              let reiyaku = {
+                HP_power: data.reiyaku_HP_power,
+                ATK_power: data.reiyaku_ATK_power,
+                DEF_power: data.reiyaku_DEF_power,
+                AGI_power: data.reiyaku_AGI_power
+              };
+
+              // 武器と防具のIDと名前を取得
+              let weaponId = data.weapon;
+              let armorId = data.armor;
+              let weaponName = items.items.find(item => item.id === weaponId).name;
+              let armorName = items.items.find(item => item.id === armorId).name;
+
+              // ステータスを計算
+              let status = calculateStatus(data.level, data.job, weaponId, data.weaponLevel, armorId, data.armorLevel, yonkami, gogyou, reiyaku);
+              // NextEXPを計算
+              function calculateNextEXP(n) {
+                let NextEXP = Math.round((10 * Math.pow(1.15, n) * (Math.pow(1.15,n) - 1) / 0.15));
+                return NextEXP;
+              }
+              let nextEXP = calculateNextEXP(data.level);//次のレベルまでの経験値
+
+              //↓ここから戦闘関係
+
+              //敵一覧
+              const monsters = {
+                "monsters": [
+                {
+                    "id": 1,
+                    "src":"./img/monster/01.png",
+                    "name": "狙如",
+                    "EXP": 5,
+                    "money": 30,
+                    "drop":"0",
+                    "HP": 50,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 10,
+                },
+                {
+                    "id": 2,
+                    "src":"./img/monster/02.png",
+                    "name": "禍斗",
+                    "EXP":10,
+                    "money": 50,
+                    "drop":"0",
+                    "HP": 65,
+                    "ATK": 20,
+                    "DEF": 10,
+                    "AGI": 15
+                },
+                {
+                    "id": 3,
+                    "src":"./img/monster/03.png",
+                    "name": "窫窳",
+                    "EXP":150,
+                    "money": 70,
+                    "drop":"0",
+                    "HP": 300,
+                    "ATK": 50,
+                    "DEF": 25,
+                    "AGI": 60
+                },
+                {
+                    "id": 4,
+                    "src":"./img/monster/04.png",
+                    "name": "玃猿",
+                    "EXP":200,
+                    "money": 100,
+                    "drop":"0",
+                    "HP": 500,
+                    "ATK": 70,
+                    "DEF": 30,
+                    "AGI": 80
+                },
+                {
+                    "id": 5,
+                    "src":"./img/monster/05.png",
+                    "name": "牛鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 6,
+                    "src":"./img/monster/06.png",
+                    "name": "水落鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 7,
+                    "src":"./img/monster/07.png",
+                    "name": "奥若洛木",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 8,
+                    "src":"./img/monster/08.png",
+                    "name": "疫鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 9,
+                    "src":"./img/monster/09.png",
+                    "name": "東の悪鬼",
+                    "EXP":300,
+                    "money": 150,
+                    "drop":"0",
+                    "HP": 700,
+                    "ATK": 50,
+                    "DEF": 15,
+                    "AGI": 20
+                },
+                {
+                    "id": 10,
+                    "src":"./img/monster/10.png",
+                    "name": "南の悪鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 11,
+                    "src":"./img/monster/11.png",
+                    "name": "西の悪鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 12,
+                    "src":"./img/monster/12.png",
+                    "name": "北の悪鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 13,
+                    "src":"./img/monster/13.png",
+                    "name": "中の悪鬼",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 14,
+                    "src":"./img/monster/konton.png",
+                    "name": "渾敦",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 10000,
+                    "ATK": 200,
+                    "DEF": 100,
+                    "AGI": 50
+                },
+                {
+                    "id": 15,
+                    "src":"./img/monster/kyuki.png",
+                    "name": "窮奇",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 16,
+                    "src":"./img/monster/toukotu.png",
+                    "name": "檮杌",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 17,
+                    "src":"./img/monster/toutetu.png",
+                    "name": "饕餮",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                },
+                {
+                    "id": 18,
+                    "src":"./img/monster/heiron.png",
+                    "name": "黒龍",
+                    "EXP":10,
+                    "money": 5,
+                    "drop":"0",
+                    "HP": 30,
+                    "ATK": 10,
+                    "DEF": 5,
+                    "AGI": 8
+                }
+                ]
+              }
+
+
+              let userName=user.displayName;//firebaseから取得
+              let level=data.level;//firebaseから取得
+              let currentHP; //現在HP
+              let maxHP = status.HP;//HPの最大値
+              let ATK = status.ATK;//攻撃力
+              let DEF = status.DEF;//防御力
+              let AGI = status.AGI;//素早さ
+              let dungeonFloor; // ダンジョンの階層
+              let enemies = []; // 現在の敵
+              let gainEXP;//取得経験値
+              let gainMoney;//取得お金
+              let dungeonName; // ここでダンジョン名を定義
+              let EXP = data.EXP;
+              let money = data.money;
+              let logDamage = 0;//討伐ログ用ダメージ
+              let timestamp = Date.now();//ログ用時間
+              //レア泥判定 0:無所持　1:所持
+              let sitiseiken = data.sitiseiken
+              let tensyouhu = data.tensyouhu
+              let kouryuga = data.kouryuga
+              let yumeizin = data.yumeizin
+              let potionCount;
+              let turnLimit = 0;
+
+              //ダンジョン出発ボタン
+              window.battleStart = function(dungeon) {
+                document.getElementById('map').style.display = 'none';
+                document.getElementById('dungeon').style.display = 'block';
+                dungeonName = dungeon; // dungeonNameに値を設定
+                let potionCount = 10;
+                currentHP = status.HP;
+                dungeonFloor = 1; // ダンジョンを開始するときは1階から
+                gainEXP = 0; // 取得経験値を初期化
+                gainMoney = 0; // 取得お金を初期化
+
+                //battleWindowに変数を入れる
+                document.getElementById('currentHP').innerText = currentHP;
+                document.getElementById('maxHP').innerText = maxHP;
+                document.getElementById('potionCount').innerText = potionCount;
+                monstersSet(dungeonName, dungeonFloor);
+
+
+                //回復ボタン data.shopLevelが品質
+                window.potion = function() {
+                  if(potionCount >= 1){
+                      if (data.shopLevel == 1){
+                          currentHP += Math.round(maxHP * 0.3);
+                          potionCount --; 
+                      }if(data.shopLevel == 2){
+                          currentHP += Math.round(maxHP * 0.5);
+                          potionCount --; 
+                      }if(data.shopLevel == 3){
+                          currentHP += Math.round(maxHP * 0.7);
+                          potionCount --; 
+                      }
+                  }else{
+                  }
+                  if(currentHP > maxHP){
+                      currentHP = maxHP;
+                  }
+                  document.getElementById('potionCount').innerText = potionCount;
+                  document.getElementById('currentHP').innerText = currentHP;
+                }
+                }
+
+
+                //モンスター選択
+                window.monstersSet = function(dungeonName, floor) {
+                  let monsterId;
+                  switch(dungeonName) {
+                    case 'higasi':
+                      switch(floor) {
+                        case 1:
+                        case 2:
+                          monsterId = 1;
+                          break;
+                        case 3:
+                        case 4:
+                          monsterId = 2;
+                          break;
+                        case 5:
+                          monsterId = 9;
+                          break;
+                        case 6:
+                        case 7:
+                          monsterId = 3;
+                          break;
+                        case 8:
+                        case 9:
+                          monsterId = 4;
+                          break;
+                        case 10:
+                          monsterId = 14;
+                          break;
+                      }
+                      break;
+                    case 'minami':
+                      switch(floor) {
+                        case 1:
+                        case 2:
+                          monsterId = 1;
+                          break;
+                        case 3:
+                        case 4:
+                          monsterId = 2;
+                          break;
+                        case 5:
+                          monsterId = 10;
+                          break;
+                        case 6:
+                        case 7:
+                          monsterId = 3;
+                          break;
+                        case 8:
+                        case 9:
+                          monsterId = 4;
+                          break;
+                        case 10:
+                          monsterId = 15;
+                          break;
+                      }
+                      break;
+                      case 'nisi':
+                      switch(floor) {
+                        case 1:
+                        case 2:
+                          monsterId = 1;
+                          break;
+                        case 3:
+                        case 4:
+                          monsterId = 2;
+                          break;
+                        case 5:
+                          monsterId = 11;
+                          break;
+                        case 6:
+                        case 7:
+                          monsterId = 3;
+                          break;
+                        case 8:
+                        case 9:
+                          monsterId = 4;
+                          break;
+                        case 10:
+                          monsterId = 16;
+                          break;
+                      }
+                      break;
+                    case 'kita':
+                      switch(floor) {
+                        case 1:
+                        case 2:
+                          monsterId = 1;
+                          break;
+                        case 3:
+                        case 4:
+                          monsterId = 2;
+                          break;
+                        case 5:
+                          monsterId = 12;
+                          break;
+                        case 6:
+                        case 7:
+                          monsterId = 3;
+                          break;
+                        case 8:
+                        case 9:
+                          monsterId = 4;
+                          break;
+                        case 10:
+                          monsterId = 17;
+                          break;
+                      }
+                      break;
+                    case 'naka':
+                      switch(floor) {
+                        case 1:
+                        case 2:
+                          monsterId = 5;
+                          break;
+                        case 3:
+                        case 4:
+                          monsterId = 6;
+                          break;
+                        case 5:
+                          monsterId = 13;
+                          break;
+                        case 6:
+                        case 7:
+                          monsterId = 7;
+                          break;
+                        case 8:
+                        case 9:
+                          monsterId = 8;
+                          break;
+                        case 10:
+                          monsterId = 18;
+                          break;
+                      }
+                      break;
+                  }
+
+                  let monster = monsters.monsters.find(monster => monster.id === monsterId);
+                  let originalName = monster.name;
+
+                  if ([2, 4, 7, 9].includes(floor)) {
+                    enemies = [{...monster, name: originalName + '・壱'}];
+                    let monsterB = {...monster, name: originalName + '・弐'};
+                    enemies.push(monsterB);
+                  } else {
+                    enemies = [{...monster, name: originalName}];
+                  }
+
+                  document.getElementById('enemyImgBox').children[0].src = enemies[0].src;
+                  document.getElementById('enemyName').innerText = enemies.map(enemy => enemy.name).join(' と ');
+
+
+                }
+
+
+// 攻撃ボタン
+window.attack = async function() {  // 非同期関数に変更
+  //戦闘情報表示
+  document.getElementById('battleInfo').style.display = 'block';
+
+  //確認ボタン非活性化
+  document.getElementById("nextTurn").disabled = true;
+
+  //ターン制限加算
+  turnLimit ++;
+  // AGI順にソート
+  let characters = [status, ...enemies].sort((a, b) => b.AGI - a.AGI);
+
+  for (let character of characters) {
+    if (character === status) {
+      // プレイヤーの攻撃
+      let target = enemies[0]; // 最初の敵を攻撃対象とする
+
+      if (dungeonFloor == 10){
+        if(dungeonName == "higasi"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+            target.HP = gokyou.konton;
+          }
+        }
+        if(dungeonName == "minami"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+            target.HP = gokyou.kyuki;
+          }
+        }
+        if(dungeonName == "nisi"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+            target.HP = gokyou.toukotu;
+          }
+        }
+        if(dungeonName == "kita"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+            target.HP = gokyou.toutetu;
+          }
+        }
+        if(dungeonName == "naka"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+            target.HP = gokyou.kokuryu;
+          }
+        }
+      }
+
+      // クリティカル補正
+      let critical;
+      if (AGI <= 100) {
+        critical = AGI / 10 * 0.005;
+      } else if (AGI <= 250) {
+        critical = 0.05 + (AGI - 100) / 15 * 0.005;
+      } else if (AGI <= 450) {
+        critical = 0.10 + (AGI - 250) / 20 * 0.005;
+      } else if (AGI <= 700) {
+        critical = 0.15 + (AGI - 450) / 25 * 0.005;
+      } else if (AGI <= 1000) {
+        critical = 0.20 + (AGI - 700) / 30 * 0.005;
+      } else if (AGI <= 2000) {
+        critical = 0.30 + (AGI - 1000) / 100 * 0.005;
+      } else if (AGI <= 4000) {
+        critical = 0.50 + (AGI - 2000) / 200 * 0.005;
+      } else if (AGI <= 6000) {
+        critical = 0.70 + (AGI - 4000) / 200 * 0.005;
+      } else {
+        critical = 0.90;
+      }
+      let criticalCorrection;
+      if (Math.random() < critical) {
+        criticalCorrection = 1.5;
+      } else {
+        criticalCorrection = 1;
+      }
+      // ダメージ計算
+      let damage = Math.ceil((((ATK * 0.5) - (target.DEF * 0.25)) * (1 + Math.random() * 0.1)) * criticalCorrection);
+      if (damage < 0) damage = 0; // ダメージが負にならないように
+      target.HP -= damage;
+      
+      if (dungeonFloor == 10){
+        if(dungeonName == "higasi"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+                update(commonRef, {
+                konton: gokyou.konton - damage,
+                })
+          }
+        }
+        if(dungeonName == "minami"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+                update(commonRef, {
+                kyuki: gokyou.kyuki - damage,
+                })
+          }
+        }
+        if(dungeonName == "nisi"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+                update(commonRef, {
+                toukotu: gokyou.toukotu - damage,
+                })
+          }
+        }
+        if(dungeonName == "kita"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+                update(commonRef, {
+                toutetu: gokyou.toutetu - damage,
+                })
+          }
+        }
+        if(dungeonName == "naka"){
+          let snapshot = await get(commonRef);  // awaitを直接使用
+          if (snapshot.exists()) {
+            let gokyou = snapshot.val();
+                update(commonRef, {
+                kokuryu: gokyou.kokuryu - damage,
+                })
+          }
+        }
+      }
+
+      document.getElementById('battleMessage').innerHTML += `${userName}の攻撃<br>${target.name}に、${damage}のダメージを与えた<br>`;
+
+      if(dungeonFloor == 10){
+        logDamage += damage;
+      }
+      //確認ボタン活性化
+      document.getElementById("nextTurn").disabled = false;
+
+      // 敵のHPが0以下になったら戦闘終了
+      if (target.HP <= 0) {
+        document.getElementById('battleMessage').innerHTML += `${target.name}が倒れた！<br>`; // 倒れたモンスターの名前を表示
+        gainEXP += target.EXP; // 経験値を獲得
+        gainMoney += target.money; //お金を獲得
+        enemies.shift(); // 倒した敵を配列から削除
+        if (enemies.length === 0) {
+          document.getElementById('battleMessage').innerHTML += `【勝利】<br>合計${gainEXP}の経験値と、${gainMoney}の通貨を手に入れた！<br>`;
+          update(statusRef, {
+            money: money + gainMoney,
+            EXP: EXP + gainEXP
+          })
+          EXP += gainEXP;
+          money += gainMoney;
+          //レベル上限に達していなかったらレベルアップしてステータスを再計算
+          if(level <= 20 + data.tensei){
+            if( EXP >= nextEXP){
+              update(statusRef, {
+                EXP: 0,
+                level: data.level + 1
+              }).then(() => {
+                // 更新後のデータを再取得
+                get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val(); // ローカルのデータを更新
+                    // ステータスを再計算
+                    status = calculateStatus(data.level, data.job, weaponId, data.weaponLevel, armorId, data.armorLevel, yonkami, gogyou, reiyaku);
+                    nextEXP = calculateNextEXP(data.level);
+                    EXP = 0;
+                    maxHP = status.HP;//HPの最大値
+                    currentHP = maxHP;
+                    ATK = status.ATK;//攻撃力
+                    DEF = status.DEF;//防御力
+                    AGI = status.AGI;//素早さ
+                    level = data.level;
+
+                    // レベルアップメッセージを表示
+                    document.getElementById('battleMessage').innerHTML += `<br>${userName}は${data.level}にレベルアップした！<br>`;
+                    document.getElementById('currentHP').innerText = currentHP;
+                    document.getElementById('maxHP').innerText= status.HP;
+                  }
+                });
+              });
+            }
+          }
+          if(dungeonFloor == 5){
+            if (dungeonName == 'higasi'){
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>攻撃の霊薬:1個`;
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_ATK_count: data.reiyaku_ATK_count + 1
+                    })
+                  }
+                })
+            }
+            if (dungeonName == 'minami'){
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>体力の霊薬:1個`;
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_HP_count: data.reiyaku_HP_count + 1
+                    })
+                  }
+                })
+            }
+            if (dungeonName == 'nisi'){
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>俊敏の霊薬:1個`;
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_AGI_count: data.reiyaku_AGI_count + 1
+                    })
+                  }
+                })
+            }
+            if (dungeonName == 'kita'){
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>防御の霊薬:1個`;
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_DEF_count: data.reiyaku_DEF_count + 1
+                    })
+                  }
+                })
+            }
+            if (dungeonName == 'naka'){
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>全霊薬:1個`;
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_ATK_count: data.reiyaku_ATK_count + 1,
+                      reiyaku_HP_count: data.reiyaku_HP_count + 1,
+                      reiyaku_AGI_count: data.reiyaku_AGI_count + 1,
+                      reiyaku_DEF_count: data.reiyaku_DEF_count + 1
+                    })
+                  }
+                })
+            }
+          }
+          if(dungeonFloor <= 9){
+          document.getElementById('nextFloor').style.display = 'block'
+          }if(dungeonFloor == 10){
+          document.getElementById('battleMessage').innerHTML += `【褒賞】<br>${logDamage}ダメージを与えた。<br>ダメージ分の通貨を獲得<br>拠点に帰還します。`;
+
+          //討伐ログを更新
+          let bossname;
+          let commonRef = ref(db, 'common');
+
+          if (dungeonName == 'higasi'){
+            bossname = '渾敦'
+            get(commonRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                let gokyou = snapshot.val();
+                update(commonRef, {
+                konton: 150000,
+                seiryu: gokyou.seiryu + 1
+                })
+              }
+            })
+            if(sitiseiken == 0){
+            update(statusRef, {
+                sitiseiken: 1,
+              })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>浪人専用装備:七星剣`;
+            }else{
+
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_ATK_count: data.reiyaku_ATK_count + 10,
+                    })
+                  }
+                })
+
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>攻撃の霊薬:10個`;
+            }
+          }if (dungeonName == 'minami'){
+            bossname = '窮奇'
+            get(commonRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                let gokyou = snapshot.val();
+                update(commonRef, {
+                kyuki: 100000,
+                suzaku: gokyou.suzaku + 1
+                })
+              }
+            })
+            if(tensyouhu == 0){
+            update(statusRef, {
+                tensyouhu: 1,
+              })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>道士専用装備:天照符`;
+            }else{
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_HP_count: data.reiyaku_Y_count + 10,
+                    })
+                  }
+                })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>体力の霊薬:10個`;
+            }
+          }if (dungeonName == 'nisi'){
+            bossname = '檮杌'
+            get(commonRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                let gokyou = snapshot.val();
+                update(commonRef, {
+                toukotu: 100000,
+                byakko: gokyou.byakko + 1
+                })
+              }
+            })
+            if(kouryuga == 0){
+            update(statusRef, {
+                kouryuga: 1,
+              })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>修行僧専用装備:黄龍牙`;
+            }else{
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_AGI_count: data.reiyaku_AGI_count + 10,
+                    })
+                  }
+                })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>俊敏の霊薬:10個`;
+            }
+          }if (dungeonName == 'kita'){
+            bossname = '饕餮'
+            get(commonRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                let gokyou = snapshot.val();
+                update(commonRef, {
+                toutetu: 100000,
+                genbu: gokyou.genbu + 1
+                })
+              }
+            })
+            if(yumeizin == 0){
+            update(statusRef, {
+                yumeizin: 1,
+              })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>隠密専用装備:幽冥刃`;
+            }else{
+              get(statusRef)
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    data = snapshot.val();
+                    update(statusRef, {
+                      reiyaku_DEF_count: data.reiyaku_DEF_count + 10,
+                    })
+                  }
+                })
+              document.getElementById('battleMessage').innerHTML += `<br>【戦利品】<br>防御の霊薬:10個`;
+            }
+          }if (dungeonName == 'naka'){
+            bossname = '黒龍'
+            get(commonRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                let gokyou = snapshot.val();
+                update(commonRef, {
+                kokuryu: 10000000,
+                clear: gokyou.clear + 1
+                })
+              }
+            })
+          };
+
+          
+          let message = bossname + 'に' + logDamage + 'ダメージを与え、討伐した！';
+          const messageNode = ref(db, 'common/log');
+          timestamp = Date.now();
+          get(messageNode).then((snapshot) => {
+              let messages = snapshot.val() ? JSON.parse(snapshot.val()) : {};
+              messages[user.displayName + '_' + timestamp] = message;
+              let keys = Object.keys(messages);
+              keys.sort();
+
+              // ログは50個まで
+              if (keys.length > 50) {
+                  delete messages[keys[0]];
+              }
+              set(messageNode, JSON.stringify(messages));
+          });
+
+          document.getElementById('kikan').style.display = 'block'
+        }
+        } else {
+          document.getElementById('enemyName').innerText = enemies.map(enemy => enemy.name).join(' と '); // 残った敵の名前を表示
+        }
+        break; // 敵が倒されたらこのターンの攻撃を終了
+      }
+    } else if (enemies.includes(character)) { // characterがまだ生きている敵であることを確認
+      // 敵の攻撃
+      // クリティカル補正
+      let critical;
+      if (AGI <= 100) {
+        critical = AGI / 10 * 0.005;
+      } else if (character.AGI <= 250) {
+        critical = 0.05 + (AGI - 100) / 15 * 0.005;
+      } else if (character.AGI <= 450) {
+        critical = 0.10 + (AGI - 250) / 20 * 0.005;
+      } else if (character.AGI <= 700) {
+        critical = 0.15 + (AGI - 450) / 25 * 0.005;
+      } else if (character.AGI <= 1000) {
+        critical = 0.20 + (AGI - 700) / 30 * 0.005;
+      } else if (character.AGI <= 2000) {
+        critical = 0.30 + (AGI - 1000) / 100 * 0.005;
+      } else if (character.AGI <= 4000) {
+        critical = 0.50 + (AGI - 2000) / 200 * 0.005;
+      } else if (character.AGI <= 6000) {
+        critical = 0.70 + (AGI - 4000) / 200 * 0.005;
+      } else {
+        critical = 0.90;
+      }
+      let criticalCorrection;
+      if (Math.random() < critical) {
+        criticalCorrection = 1.5;
+      } else {
+        criticalCorrection = 1;
+      }
+      let damage = Math.ceil((((character.ATK * 0.5) - (DEF * 0.25)) * (1 + Math.random() * 0.1)) * criticalCorrection);
+
+      if (damage < 0)damage = 0;//ダメージが負なら０
+
+      let minDamage;//最小ダメージ
+      if (dungeonFloor == 5){
+        minDamage = Math.floor( Math.random() * 25 ) + 25;
+      }if(dungeonFloor == 10){
+        minDamage = Math.floor( Math.random() * 50) + 50;
+        if(dungeonName== 'naka'){
+          minDamage = Math.floor( Math.random() * 50) + 50;
+        }
+      }else{
+        minDamage = Math.floor( Math.random() * 5) + 5;
+      }
+
+      damage +=minDamage
+
+      //回避判定
+      let kaihi;
+      if (AGI <= 100) {
+        kaihi = AGI / 10 * 0.005;
+      } else if (AGI <= 250) {
+        kaihi = 0.05 + (AGI - 100) / 15 * 0.005;
+      } else if (AGI <= 450) {
+        kaihi = 0.10 + (AGI - 250) / 20 * 0.005;
+      } else if (AGI <= 700) {
+        kaihi = 0.15 + (AGI - 450) / 25 * 0.005;
+      } else if (AGI <= 1000) {
+        kaihi = 0.20 + (AGI - 700) / 30 * 0.005;
+      } else if (AGI <= 2000) {
+        kaihi = 0.30 + (AGI - 1000) / 100 * 0.005;
+      } else if (AGI <= 4000) {
+        kaihi = 0.50 + (AGI - 2000) / 200 * 0.005;
+      } else if (AGI <= 6000) {
+        kaihi = 0.70 + (AGI - 4000) / 200 * 0.005;
+      } else {
+        kaihi = 0.90;
+      }
+
+      if (Math.random() < kaihi) {
+        document.getElementById('battleMessage').innerHTML += `${character.name}の攻撃<br>${userName}は身をかわした<br>`;
+      }else{
+        currentHP -= damage;
+        document.getElementById('battleMessage').innerHTML += `${character.name}の攻撃<br>${userName}に、${damage}のダメージを与えた<br>`;
+      }
+
+      if(turnLimit >= 21){
+        currentHP -= 1000;
+        document.getElementById('battleMessage').innerHTML += `【相手は怒り狂った！】<br>${userName}に、1000の固定ダメージを与えた<br>`;
+      }
+
+      // プレイヤーのHPが0以下になったら戦闘終了
+      if (currentHP <= 0) {
+
+        //10階なら、与えたダメージ分のお金と経験値を得る
+        if(dungeonFloor == 10){
+          update(statusRef, {
+            money: money + logDamage,
+            EXP: data.EXP + logDamage,
+          })
+
+          //討伐ログを更新
+          let bossname;
+          let commonRef = ref(db, 'common');
+
+          if (dungeonName == 'higasi'){
+            bossname = '渾敦'
+          }if (dungeonName == 'minami'){
+            bossname = '窮奇'
+          }if (dungeonName == 'nisi'){
+            bossname = '檮杌'
+          }if (dungeonName == 'kita'){
+            bossname = '饕餮'
+          }if (dungeonName == 'naka'){
+            bossname = '黒龍'
+          };
+          
+          let message = bossname + 'に合計' + logDamage + 'ダメージを与えた！';
+          const messageNode = ref(db, 'common/log');
+          timestamp = Date.now();
+          get(messageNode).then((snapshot) => {
+              let messages = snapshot.val() ? JSON.parse(snapshot.val()) : {};
+              messages[user.displayName + '_' + timestamp] = message;
+              let keys = Object.keys(messages);
+              keys.sort();
+
+              // ログは50個まで
+              if (keys.length > 50) {
+                  delete messages[keys[0]];
+              }
+              set(messageNode, JSON.stringify(messages));
+          });
+
+          document.getElementById('battleMessage').innerHTML += `【敗北】<br>${bossname}に合計${logDamage}ダメージ与えた。<br>【褒賞】<br>ダメージ分の通貨と経験値を獲得<br>拠点に戻ります。`;
+        }else{
+          document.getElementById('battleMessage').innerHTML += `【敗北】<br>拠点に戻ります。`;
+        }
+        document.getElementById('nextTurn').style.display = 'none'
+        document.getElementById('returnHome').style.display = 'block'
+        break;
+      }
+    }
+    document.getElementById('currentHP').innerText = currentHP;
+    document.getElementById('maxHP').innerText = maxHP;
+
+  }
+
+
+  window.nextTurn = function() {
+    document.getElementById('battleInfo').style.display = 'none'
+    document.getElementById('battleMessage').innerHTML = '';
+  }
+
+  window.returnHome = function() {
+    location.href='home.html'
+  }
+
+  window.nextFloor = function() {
+    dungeonFloor ++;//階層を1回上げる
+    gainEXP = 0; // 取得経験値を初期化
+    gainMoney = 0; // 取得お金を初期化
+    //battleWindowに変数を入れる
+    document.getElementById('currentHP').innerText = currentHP;
+    document.getElementById('maxHP').innerText = maxHP;
+    document.getElementById('battleInfo').style.display = 'none'
+    document.getElementById('battleMessage').innerHTML = '';
+    document.getElementById('nextFloor').style.display = 'none'
+    monstersSet(dungeonName, dungeonFloor);
+    turnLimit = 0;
+  }
+
+  document.getElementById('currentHP').innerText = currentHP;
+
+}
+
+
+          } else {
+            console.log("読み取りエラー");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      console.log("読み取りエラー");
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+  } else {
+    location.href='home.html'
+  }
+
+});
+
+
+
+</script>
+
+<script>
+
+//汎用エリア表示
+function toggleDisplay(area, action) {
+    let areaBox = document.getElementById(area + 'Box');
+    let closeMap = document.getElementById('closeMap');
+    if (action === 'open') {
+        areaBox.style.display = 'block';
+        closeMap.style.display = 'none';
+    } else if (action === 'close') {
+        areaBox.style.display = 'none';
+        closeMap.style.display = 'block';
+    }
+}
+
+// 東エリア表示
+function higasiOpen() {
+    toggleDisplay('higasi', 'open');
+}
+// 東エリア非表示
+function higasiClose() {
+    toggleDisplay('higasi', 'close');
+}
+
+// 南エリア表示
+function minamiOpen() {
+    toggleDisplay('minami', 'open');
+}
+// 南エリア非表示
+function minamiClose() {
+    toggleDisplay('minami', 'close');
+}
+
+// 西エリア表示
+function nisiOpen() {
+    toggleDisplay('nisi', 'open');
+}
+// 西エリア非表示
+function nisiClose() {
+    toggleDisplay('nisi', 'close');
+}
+
+// 北エリア表示
+function kitaOpen() {
+    toggleDisplay('kita', 'open');
+}
+// 北エリア非表示
+function kitaClose() {
+    toggleDisplay('kita', 'close');
+}
+
+// 中エリア表示
+function nakaOpen() {
+    toggleDisplay('naka', 'open');
+}
+// 中エリア非表示
+function nakaClose() {
+    toggleDisplay('naka', 'close');
+}
+
+
+	// ダブルタップ禁止
+	window.addEventListener('touchstart', function (event) {
+	    if (event.touches.length > 1) {
+	        event.preventDefault();
+	    }
+	}, { passive: false });
+
+	let lastTouchEnd = 0;
+	window.addEventListener('touchend', function (event) {
+	    const now = Date.now();
+	    if (now - lastTouchEnd <= 300) {
+	        event.preventDefault();
+	    }
+	    lastTouchEnd = now;
+	}, false);
+
+
+</script>
+
+</html>

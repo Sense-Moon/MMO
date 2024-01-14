@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+
+.kyouka, .soubi, .kitou, .return, .kitou-box, .soubi-box{
+  position: absolute;
+  background-color:#f7f5f4;
+  box-shadow: 5px 5px 10px 8px #000, inset 0 0 10px #000;
+  color: #102431;
+  text-shadow: 1px 1px 2px #000000; 
+  border: none;
+}
+
+.kyouka {
+  width: 100vmin;
+  height: calc(100vmin * 1.5); 
+  max-width: 640px;
+  max-height: 960px;
+  background-image: url(./img/background/kyouka.png);
+  background-size: cover;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.chara {
+  width: 60%;
+  height: 80%;
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  border:1px #000;
+}
+
+.chara img {
+  height: 100%;
+  animation: breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.005); }
+}
+
+.soubi, .kitou, .return{
+  width: 20%;
+  height: 13%;
+  bottom: 5%;
+}
+.soubi { left: 40%; }
+.kitou { left: 10%; }
+.return { right: 10%; }
+
+.soubi-box, .kitou-box{
+  width: 90%;
+  height: 90%;
+  overflow-y: scroll;
+  background-color:#f7f5f4;
+  position: absolute;
+  left: 5%;
+  top: 5%;
+  padding: 1%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  font-size: 7vw;
+}
+
+
+.close{
+  z-index: 2;
+  width: 10%;
+  height: 6%;
+  bottom: 5%;
+  font-weight: bold;
+  position: absolute;
+  top: 0%;
+  right: 3%;
+  border: none;
+  background-color: transparent;
+  color: #102431;
+}
+
+.title{
+    font-size: 8vw;
+}
+
+.reiyaku-num{
+    font-size: 5vw;
+}
+.reiyaku-button, .gogyou-button{
+    right: 3%;
+    position: absolute;
+    height: 8%;
+    font-size: 6.2vw;
+    margin-top: 1%;
+}
+.kyouka-btn{
+    height: 8%;
+    font-size: 6.2vw;
+    margin-left: 16%;
+}
+
+.tousi-btn,.kyouka-btn{
+    height: 8%;
+    font-size: 6.2vw;
+    margin-top: 1%;
+    position: absolute;
+    right: 3%;
+}
+
+.tensei-button{
+    right: 3%;
+    height: 8%;
+    font-size: 6.2vw;
+    position: absolute;
+}
+
+select{
+    width: 26%;
+    font-size: 6.2vw;
+    text-align: center;
+}
+
+.henkou-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#weaponList,#armorList{
+    width: 80%;
+    margin-left: 5%;
+}
+
+.tousi-box {
+    display: flex;
+    align-items: center;
+}
+
+.magatama-info{
+
+    display: flex;
+    align-items: center;
+}
+
+
+.money{
+    text-align: left;
+}
+
+span{
+    font-size: 5.5vw;
+}
+.shop-box, .kazi-box{
+    font-size: 6vw;
+}
+
+@media (min-width: 640px) {
+  button {
+	font-size: 46px;
+	line-height: 5%;
+	}
+
+  .close{
+    font-size: 46px;
+    top: 1%;
+
+  }
+  .soubi-box, .kitou-box{
+    font-size: 46px;
+  }
+  .title{
+    font-size: 52px;
+  }
+  .reiyaku-button, .gogyou-button,.tensei-button{
+    font-size:40px;
+  }
+  .reiyaku-num{
+    font-size: 32px;
+  }
+  select{
+    font-size: 36px;
+  }
+  .kyouka-btn,.tousi-btn{
+    line-height:unset;
+    font-size:40px;
+  }
+  span{
+    font-size: 36px;
+  }
+  .shop-box, .kazi-box{
+    font-size: 38px;
+  }
+
+}
+
+</style>
+
+<body>
+
+
+<div class="kyouka">
+
+    <div class="chara">
+        <img src="./img/chara/kitou.png"></img>
+    </div>
+
+    <div id="buttons">
+        <button class="kitou" onclick="kitouOpen()">祈祷</button>
+        <button class="soubi" onclick="soubiOpen()">装備</button>
+        <button class="return" onclick="location.href='home.html'">退出</button>
+    </div>
+
+    <div class="kitou-box" id="kitouWindow" style="display:none">
+
+        <div class="reiyaku-section" id="reiyakuSection">
+            <div class="title">【霊薬】</div>
+            <div class="reiyaku-num" id="reiyakuNum">所持数: 体1個,攻:1個,防:1個,俊:1個</div>
+            <div class="reiyaku-item" id="hpReiyaku">
+                <span>体力の霊薬:</span>
+                <span class="reiyaku-count" id="hpReiyakuCount">n</span>
+                <button class="reiyaku-button" id="hpReiyakuButton">飲む</button>
+            </div>
+            <div class="reiyaku-item" id="atkReiyaku">
+                <span>攻撃の霊薬:</span>
+                <span class="reiyaku-count" id="atkReiyakuCount">n</span>
+                <button class="reiyaku-button" id="atkReiyakuButton">飲む</button>
+            </div>
+            <div class="reiyaku-item" id="defReiyaku">
+                <span>防御の霊薬:</span>
+                <span class="reiyaku-count" id="defReiyakuCount">n</span>
+                <button class="reiyaku-button" id="defReiyakuButton">飲む</button>
+            </div>
+            <div class="reiyaku-item" id="agiReiyaku">
+                <span>俊敏の霊薬:</span>
+                <span class="reiyaku-count" id="agiReiyakuCount">n</span>
+                <button class="reiyaku-button" id="agiReiyakuButton">飲む</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="gogyou-section" id="gogyouSection">
+            <div class="title">【五行】</div>
+            <div class="gogyou-point" id="gogyouPoint">五行点: n</div>
+            <div class="gogyou-item" id="mokuGogyou">
+                <span>木:</span>
+                <span class="gogyou-count" id="mokuGogyouCount">n</span>
+                <button class="gogyou-button" id="mokuGogyouButton">振り分ける</button>
+            </div>
+            <div class="gogyou-item" id="hiGogyou">
+                <span>火:</span>
+                <span class="gogyou-count" id="hiGogyouCount">n</span>
+                <button class="gogyou-button" id="hiGogyouButton">振り分ける</button>
+            </div>
+            <div class="gogyou-item" id="doGogyou">
+                <span>土:</span>
+                <span class="gogyou-count" id="doGogyouCount">n</span>
+                <button class="gogyou-button" id="doGogyouButton">振り分ける</button>
+            </div>
+            <div class="gogyou-item" id="kinGogyou">
+                <span>金:</span>
+                <span class="gogyou-count" id="kinGogyouCount">n</span>
+                <button class="gogyou-button" id="kinGogyouButton">振り分ける</button>
+            </div>
+            <div class="gogyou-item" id="suiGogyou">
+                <span>水:</span>
+                <span class="gogyou-count" id="suiGogyouCount">n</span>
+                <button class="gogyou-button" id="suiGogyouButton">振り分ける</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="tensei-section" id="tenseiSection">
+            <div class="title">【転生】</div>
+            <div class="tensei-level" id="tenseiLevel">現在のレベル: n</div>
+            <div class="tensei-possible-level" id="tenseiPossibleLevel">転生可能レベル: n</div>
+            <div class="tensei-job" id="tenseiJob">
+                <label for="job-select">職業:</label>
+                <select name="jobs" id="job-select">
+                    <option value="sword">浪人</option>
+                    <option value="wizard">道士</option>
+                    <option value="fighter">修行僧</option>
+                    <option value="thief">隠密</option>
+                </select>
+            </div>
+            <div class="tensei-gender" id="tenseiGender">
+                <label for="gender-select">性別:</label>
+                <select name="genders" id="gender-select">
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                </select>
+            </div>
+            <button class="tensei-button" id="tenseiButton">転生する</button>
+            <br>
+        </div>
+
+        <button class="close" id="closesoubiButton" onclick="kitouClose()">戻</button>
+    </div>
+
+    <div class="soubi-box" id="soubiWindow" style="display:none">
+
+
+        <div class="shop-box" id="shopBox" >
+            <div class="title">【投資】</div>
+            <div class="money" id="tousi-money">所持金: n元</div>
+            <div id="shopLevel">現在の品質:1</div>
+            <div id="potion">現在の回復薬:薬草</div>
+            <div class="tousi-box">
+                <div id="tousiMoney">費用:n元</div>
+                <button class="tousi-btn" id="tousiBtn">投資する</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="game-window" id="gameWindow">
+            <div class="henkou-section" id="henkouSection">
+                <div class="henkou-info">
+                    <div class="title">【武器】</div>
+                    <select id="weaponList">
+
+                    </select>
+                </div>
+                <div class="henkou-selection">
+                    <div class="title">【防具】</div>
+                    <select id="armorList">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+
+        <hr>
+            
+        <div class="kazi-box" id="kaziSection">
+
+            <div class="magatama-user">
+                <div class="title">【勾玉】</div>
+                <div class="money" id="money">所持金: n元</div>
+            </div>
+            <br>
+            <div class="magatama-section" id="magatamaSection">
+                <div id="magatamaYOU">陽の勾玉: n</div>
+                <div class="magatama-info">
+                    <div class="weapon-cost" id="weaponCost">費用: n元</div>
+                    <button class="kyouka-btn" id="youKyouka" >強化</button>
+                </div>
+                <br>
+                <div id="magatamaIN">陰の勾玉: n</div>
+                <div class="magatama-info">
+                    <div class="armor-cost" id="armorCost">費用: n元</div>
+                    <button class="kyouka-btn" id="inKyouka">強化</button>
+                </div>
+                <br>
+            </div>
+        </div>
+
+        <button class="close" id="closesoubiButton" onclick="soubiClose()">戻</button>
+    </div>
+
+</div>
+
+</body>
+
+
+<script type="module">
+const firebaseConfig = {
+apiKey: "AIzaSyAKvoX9I14uUOj7dYEItVXJGr-gNMz1xfc",
+  authDomain: "testgame-5940a.firebaseapp.com",
+  databaseURL: "https://testgame-5940a-default-rtdb.firebaseio.com",
+  projectId: "testgame-5940a",
+  storageBucket: "testgame-5940a.appspot.com",
+  messagingSenderId: "189198151711",
+  appId: "1:189198151711:web:4e67860e2222d2eb10252a",
+  measurementId: "G-Y0V1D8CHZJ"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, setPersistence, signInWithEmailAndPassword,onAuthStateChanged,GoogleAuthProvider,browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, get,push,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+  // The persistence has been set to 'local'
+})
+.catch((error) => {
+  console.error('Failed to set persistence:', error);
+});
+
+let statusRef;
+let data;
+
+//ユーザー情報が変更されるたびに必要な情報を代入
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        let statusName = 'status/' + user.displayName;
+        statusRef = ref(db, statusName); 
+
+        // ユーザーデータをFBから取得
+        onValue(statusRef, (snapshot) => {
+            if (snapshot.exists()) {
+                data = snapshot.val();
+            }
+        });
+    }
+});
+
+//陽強化ボタン
+document.getElementById('youKyouka').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let weaponCost;
+
+    if( data.weaponLevel < 5){
+        weaponCost = 200 * (data.weaponLevel + 1);
+    }else if( data.weaponLevel < 10){
+        weaponCost = 500 * (data.weaponLevel + 1);
+    }else if( data.weaponLevel < 15){
+        weaponCost = 1000 * (data.weaponLevel + 1);
+    }else if( data.weaponLevel < 20){
+        weaponCost = 2000 * (data.weaponLevel + 1);
+    }else if( data.weaponLevel < 30){
+        weaponCost = 5000 * (data.weaponLevel + 1);
+    }else{
+        weaponCost = 10000 * (data.weaponLevel + 1);
+    }
+
+    if (data.money >= weaponCost) {
+        update(statusRef, {
+            weaponLevel: data.weaponLevel + 1,
+            money: data.money - weaponCost
+        })
+    } else {
+        console.log("読み取りエラー");
+    }
+});
+
+//陰強化ボタン
+document.getElementById('inKyouka').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let armorCost;
+
+    if( data.armorLevel < 5){
+        armorCost = 200 * (data.armorLevel + 1);
+    }else if( data.armorLevel < 10){
+        armorCost = 500 * (data.armorLevel + 1);
+    }else if( data.armorLevel < 15){
+        armorCost = 1000 * (data.armorLevel + 1);
+    }else if( data.armorLevel < 20){
+        armorCost = 2000 * (data.armorLevel + 1);
+    }else if( data.armorLevel < 30){
+        armorCost = 5000 * (data.armorLevel + 1);
+    }else{
+    armorCost = 10000 * (data.armorLevel + 1);
+    }
+
+    if (data.money >= armorCost) {
+        update(statusRef, {
+            armorLevel: data.armorLevel + 1,
+            money: data.money - armorCost
+        });
+    } else {
+        console.log("読み取りエラー");
+    }
+});
+
+//投資するボタン
+document.getElementById('tousiBtn').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    if (data.shopLevel === 1 && data.money >= 1000) {
+        update(statusRef, {
+            shopLevel: 2,
+            money: data.money - 1000
+        });
+    } else if (data.shopLevel === 2 && data.money >= 10000) {
+        update(statusRef, {
+            shopLevel: 3,
+            money: data.money - 10000
+        });
+    } else {
+        console.log("読み取りエラー");
+    }
+});
+
+//霊薬飲むボタン
+document.getElementById('hpReiyakuButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    if (data.reiyaku_HP_count >= 1) {
+        update(statusRef, {
+            reiyaku_HP_power: data.reiyaku_HP_power + 1,
+            reiyaku_HP_count: data.reiyaku_HP_count - 1
+        });
+    } else {
+        console.log("読み取りエラー or 薬不足");
+    }
+});
+document.getElementById('atkReiyakuButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    if (data.reiyaku_ATK_count >= 1) {
+        update(statusRef, {
+            reiyaku_ATK_power: data.reiyaku_ATK_power + 1,
+            reiyaku_ATK_count: data.reiyaku_ATK_count - 1
+        });
+    } else {
+        console.log("読み取りエラー or 薬不足");
+    }
+});
+document.getElementById('defReiyakuButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    if (data.reiyaku_DEF_count >= 1) {
+        update(statusRef, {
+            reiyaku_DEF_power: data.reiyaku_DEF_power + 1,
+            reiyaku_DEF_count: data.reiyaku_DEF_count - 1
+        });
+    } else {
+        console.log("読み取りエラー or 薬不足");
+    }
+});
+document.getElementById('agiReiyakuButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    if (data.reiyaku_AGI_count >= 1) {
+        update(statusRef, {
+            reiyaku_AGI_power: data.reiyaku_AGI_power + 1,
+            reiyaku_AGI_count: data.reiyaku_AGI_count - 1
+        });
+    } else {
+        console.log("読み取りエラー or 薬不足");
+    }
+});
+
+//五行振り分けボタン
+document.getElementById('mokuGogyouButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let gogyouPossiblePoint = Math.floor(data.level / 3) - data.gogyou_moku - data.gogyou_hi - data.gogyou_do - data.gogyou_kin - data.gogyou_sui;
+    if (gogyouPossiblePoint >= 1 && data.gogyou_moku < 5) {
+        update(statusRef, {
+            gogyou_moku: data.gogyou_moku + 1
+        });
+    } else {
+        console.log("読み取りエラー or 五行点不足 or 木の五行点が5以上");
+    }
+});
+document.getElementById('hiGogyouButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let gogyouPossiblePoint = Math.floor(data.level / 3) - data.gogyou_moku - data.gogyou_hi - data.gogyou_do - data.gogyou_kin - data.gogyou_sui;
+    if (gogyouPossiblePoint >= 1 && data.gogyou_hi < 5) {
+        update(statusRef, {
+            gogyou_hi: data.gogyou_hi + 1
+        });
+    } else {
+        console.log("読み取りエラー or 五行点不足 or 火の五行点が5以上");
+    }
+});
+document.getElementById('doGogyouButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let gogyouPossiblePoint = Math.floor(data.level / 3) - data.gogyou_moku - data.gogyou_hi - data.gogyou_do - data.gogyou_kin - data.gogyou_sui;
+    if (gogyouPossiblePoint >= 1 && data.gogyou_do < 5) {
+        update(statusRef, {
+            gogyou_do: data.gogyou_do + 1
+        });
+    } else {
+        console.log("読み取りエラー or 五行点不足 or 土の五行点が5以上");
+    }
+});
+document.getElementById('kinGogyouButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let gogyouPossiblePoint = Math.floor(data.level / 3) - data.gogyou_moku - data.gogyou_hi - data.gogyou_do - data.gogyou_kin - data.gogyou_sui;
+    if (gogyouPossiblePoint >= 1 && data.gogyou_kin < 5) {
+        update(statusRef, {
+            gogyou_kin: data.gogyou_kin + 1
+        });
+    } else {
+        console.log("読み取りエラー or 五行点不足 or 金の五行点が5以上");
+    }
+});
+document.getElementById('suiGogyouButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let gogyouPossiblePoint = Math.floor(data.level / 3) - data.gogyou_moku - data.gogyou_hi - data.gogyou_do - data.gogyou_kin - data.gogyou_sui;
+    if (gogyouPossiblePoint >= 1 && data.gogyou_sui < 5) {
+        update(statusRef, {
+            gogyou_sui: data.gogyou_sui + 1
+        });
+    } else {
+        console.log("読み取りエラー or 五行点不足 or 水の五行点が5以上");
+    }
+});
+
+
+//転生ボタン
+document.getElementById('tenseiButton').addEventListener('click', function() {
+    if (!statusRef || !data) return;
+    let tenseiJob = document.getElementById('job-select').value;
+    let tenseiSex = document.getElementById('gender-select').value;
+    let weapon, armor;
+    if (tenseiJob === 'sword') {
+        weapon = 8;
+        armor = 24;
+    } else if (tenseiJob === 'wizard') {
+        weapon = 12;
+        armor = 27;
+    } else if (tenseiJob === 'fighter') {
+        weapon = 16;
+        armor = 24;
+    } else if (tenseiJob === 'thief') {
+        weapon = 20;
+        armor = 27;
+    }
+    if (data.level >= 20 + data.tensei) {
+        update(statusRef, {
+            level: 1,
+            job: tenseiJob,
+            sex: tenseiSex,
+            tensei: data.tensei + 1,
+            gogyou_moku: 0,
+            gogyou_hi: 0,
+            gogyou_do: 0,
+            gogyou_kin: 0,
+            gogyou_sui: 0,
+            weapon: weapon,
+            armor: armor
+        });
+
+    } else {
+        console.log("読み取りエラー or レベル不足");
+    }
+});
+
+
+//ユーザー情報が変更されるたびに必要な情報を代入
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        let statusName = 'status/' + user.displayName;
+        let statusRef = ref(db, statusName); 
+
+        // ユーザーデータをFBから取得
+        onValue(statusRef, (snapshot) => {
+            if (snapshot.exists()) {
+            var data = snapshot.val();
+
+            //霊薬
+            let reiyakuNum = document.getElementById('reiyakuNum');
+            let reiyakuTypes = ['HP', 'ATK', 'DEF', 'AGI'];
+            let reiyakuText = ['体','攻','防','俊']
+            let reiyakuNumHtml = '所持数: ';
+
+            reiyakuTypes.forEach((type, index) => {
+                reiyakuNumHtml += `${reiyakuText[index]}${data['reiyaku_' + type + '_count']}個, `;
+                document.getElementById(type.toLowerCase() + 'ReiyakuCount').textContent = data['reiyaku_' + type + '_power'];
+            });
+
+            reiyakuNum.innerHTML = reiyakuNumHtml.slice(0, -2);
+
+            //五行
+            //木火土金水
+            let gogyouPoint = document.getElementById('gogyouPoint');
+            let gogyouElements = ['moku', 'hi', 'do', 'kin', 'sui'];
+            let gogyouTotalPoint = Math.floor(data.level / 3);
+
+            gogyouElements.forEach(element => {
+                gogyouTotalPoint -= Number(data['gogyou_' + element]);
+                document.getElementById(element + 'GogyouCount').textContent = data['gogyou_' + element];
+            });
+
+            let gogyouPointHtml = '五行点:' + gogyouTotalPoint;
+            gogyouPoint.innerHTML = gogyouPointHtml;
+
+            //転生
+            document.getElementById('tenseiLevel').innerHTML = '現在のレベル:' +  data.level
+            let tenseiPossibleLevel = Number(data.tensei) + 20;
+            document.getElementById('tenseiPossibleLevel').innerHTML ='転生可能レベル:'  + tenseiPossibleLevel;
+
+            //投資
+            let tousimoneyHtml = '所持金:' + data.money +'元'
+            document.getElementById('tousi-money').innerHTML = tousimoneyHtml;
+            document.getElementById('shopLevel').innerHTML = '現在の品質:' + data.shopLevel;
+
+            let potionNames = ['薬草', '丸薬', '秘薬'];
+            let tousiMoneyValues = ['費用:1000元', '費用:10000元', '投資完了'];
+
+            if (data.shopLevel >= 1 && data.shopLevel <= 3) {
+                document.getElementById('potion').innerHTML = '現在の回復薬:' + potionNames[data.shopLevel - 1];
+                document.getElementById('tousiMoney').innerHTML = tousiMoneyValues[data.shopLevel - 1];
+            }
+
+            if(data.shopLevel == 3 ){
+                document.getElementById('tousiBtn').disabled = true;
+            }
+
+            // アイテムを読み込む
+            const items = {
+                "items": [
+                    {
+                    "id": 0,
+                    "name": " ",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 1,
+                    "name": "薬草",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 2,
+                    "name": "丸薬",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 3,
+                    "name": "秘薬",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 4,
+                    "name": "体力の霊薬",
+                    "HP": 1,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 5,
+                    "name": "攻撃の霊薬",
+                    "HP": 0,
+                    "ATK": 1,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 6,
+                    "name": "防御の霊薬",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 1,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 7,
+                    "name": "俊敏の霊薬",
+                    "HP": 0,
+                    "ATK": 0,
+                    "DEF": 0,
+                    "AGI": 1
+                    },
+                    {
+                    "id": 8,
+                    "name": "長刀",
+                    "HP": 0,
+                    "ATK": 5,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 9,
+                    "name": "大刀",
+                    "HP": 5,
+                    "ATK": 20,
+                    "DEF": 5,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 10,
+                    "name": "鬼頭刀",
+                    "HP": 20,
+                    "ATK": 50,
+                    "DEF": 20,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 11,
+                    "name": "七星剣",
+                    "HP": 100,
+                    "ATK": 100,
+                    "DEF": 30,
+                    "AGI": 20
+                    },
+                    {
+                    "id": 12,
+                    "name": "霊符",
+                    "HP": 0,
+                    "ATK": 5,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 13,
+                    "name": "結界符",
+                    "HP": 5,
+                    "ATK": 25,
+                    "DEF": 5,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 14,
+                    "name": "滅魔符",
+                    "HP": 10,
+                    "ATK": 75,
+                    "DEF": 5,
+                    "AGI": 5
+                    },
+                    {
+                    "id": 15,
+                    "name": "天照符",
+                    "HP": 50,
+                    "ATK": 150,
+                    "DEF": 25,
+                    "AGI": 25
+                    },
+                    {
+                    "id": 16,
+                    "name": "手甲",
+                    "HP": 0,
+                    "ATK": 3,
+                    "DEF": 3,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 17,
+                    "name": "鉄甲",
+                    "HP": 20,
+                    "ATK": 20,
+                    "DEF": 10,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 18,
+                    "name": "虎爪",
+                    "HP": 50,
+                    "ATK": 50,
+                    "DEF": 25,
+                    "AGI": 10
+                    },
+                    {
+                    "id": 19,
+                    "name": "黄龍牙",
+                    "HP": 100,
+                    "ATK": 80,
+                    "DEF": 50,
+                    "AGI": 20
+                    },
+                    {
+                    "id": 20,
+                    "name": "匕首",
+                    "HP": 0,
+                    "ATK": 5,
+                    "DEF": 0,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 21,
+                    "name": "飛刀",
+                    "HP": 0,
+                    "ATK": 20,
+                    "DEF": 0,
+                    "AGI": 10
+                    },
+                    {
+                    "id": 22,
+                    "name": "影鎌",
+                    "HP": 0,
+                    "ATK": 50,
+                    "DEF": 0,
+                    "AGI": 20
+                    },
+                    {
+                    "id": 23,
+                    "name": "幽冥刃",
+                    "HP": 15,
+                    "ATK": 120,
+                    "DEF": 15,
+                    "AGI": 50
+                    },
+                    {
+                    "id": 24,
+                    "name": "竹の鎧",
+                    "HP": 10,
+                    "ATK": 0,
+                    "DEF": 5,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 25,
+                    "name": "虎皮の鎧",
+                    "HP": 30,
+                    "ATK": 5,
+                    "DEF": 10,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 26,
+                    "name": "龍鱗の鎧",
+                    "HP": 50,
+                    "ATK": 15,
+                    "DEF": 30,
+                    "AGI": 0
+                    },
+                    {
+                    "id": 27,
+                    "name": "竹の服",
+                    "HP": 5,
+                    "ATK": 0,
+                    "DEF": 3,
+                    "AGI": 3
+                    },
+                    {
+                    "id": 28,
+                    "name": "虎皮の服",
+                    "HP": 20,
+                    "ATK": 3,
+                    "DEF": 10,
+                    "AGI": 10
+                    },
+                    {
+                    "id": 29,
+                    "name": "龍鱗の服",
+                    "HP": 40,
+                    "ATK": 10,
+                    "DEF": 20,
+                    "AGI": 30
+                    }
+                ]
+                }
+
+            //武器リストに職業と店レベルに応じたアイテムを追加
+            let weaponList = document.getElementById('weaponList');
+            // 既存のオプションをクリア
+            while (weaponList.firstChild) {
+                weaponList.removeChild(weaponList.firstChild);
+            }
+
+            if (data.job === 'sword') {
+                let optionIds = [];
+                if (data.shopLevel === 1) {
+                    optionIds.push(8);
+                } else if (data.shopLevel === 2) {
+                    optionIds.push(8);
+                    optionIds.push(9);
+                } else if (data.shopLevel === 3) {
+                    optionIds.push(8);
+                    optionIds.push(9);
+                    optionIds.push(10);
+                }
+
+                if (data.sitiseiken === 1) {
+                    optionIds.push(11);
+                }
+
+                optionIds.forEach(id => {
+                    let item = items.items.find(item => item.id === id);
+                    if (item) {
+                        let option = document.createElement('option');
+                        option.value = item.id;
+                        option.text = item.name;
+                        weaponList.appendChild(option);
+                        if(data.weapon ===id){
+                            option.selected = true;
+                        }
+                    }
+                });
+            }
+
+            if (data.job === 'wizard') {
+                let optionIds = [];
+                if (data.shopLevel === 1) {
+                    optionIds.push(12);
+                } else if (data.shopLevel === 2) {
+                    optionIds.push(12);
+                    optionIds.push(13);
+                } else if (data.shopLevel === 3) {
+                    optionIds.push(12);
+                    optionIds.push(13);
+                    optionIds.push(14);
+                }
+
+                if (data.tensyouhu === 1) {
+                    optionIds.push(15);
+                }
+
+                optionIds.forEach(id => {
+                    let item = items.items.find(item => item.id === id);
+                    if (item) {
+                        let option = document.createElement('option');
+                        option.value = item.id;
+                        option.text = item.name;
+                        weaponList.appendChild(option);
+                        if(data.weapon ===id){
+                            option.selected = true;
+                        }
+                    }
+                });
+            }
+
+            if (data.job === 'fighter') {
+                let optionIds = [];
+                if (data.shopLevel === 1) {
+                    optionIds.push(16);
+                } else if (data.shopLevel === 2) {
+                    optionIds.push(16);
+                    optionIds.push(17);
+                } else if (data.shopLevel === 3) {
+                    optionIds.push(16);
+                    optionIds.push(17);
+                    optionIds.push(18);
+                }
+
+                if (data.kouryuga === 1) {
+                    optionIds.push(19);
+                }
+
+                optionIds.forEach(id => {
+                    let item = items.items.find(item => item.id === id);
+                    if (item) {
+                        let option = document.createElement('option');
+                        option.value = item.id;
+                        option.text = item.name;
+                        weaponList.appendChild(option);
+                        if(data.weapon ===id){
+                            option.selected = true;
+                        }
+                    }
+                });
+            }
+
+            if (data.job === 'thief') {
+                let optionIds = [];
+                if (data.shopLevel === 1) {
+                    optionIds.push(20);
+                } else if (data.shopLevel === 2) {
+                    optionIds.push(20);
+                    optionIds.push(21);
+                } else if (data.shopLevel === 3) {
+                    optionIds.push(20);
+                    optionIds.push(21);
+                    optionIds.push(22);
+                }
+
+                if (data.yumeizin === 1) {
+                    optionIds.push(23);
+                }
+
+                optionIds.forEach(id => {
+                    let item = items.items.find(item => item.id === id);
+                    if (item) {
+                        let option = document.createElement('option');
+                        option.value = item.id;
+                        option.text = item.name;
+                        weaponList.appendChild(option);
+                        if(data.weapon ===id){
+                            option.selected = true;
+                        }
+                    }
+                });
+            }
+
+            //防具リストに職業と店レベルに応じたアイテムを追加
+            let armorList = document.getElementById('armorList');
+            // 既存のオプションをクリア
+            while (armorList.firstChild) {
+                armorList.removeChild(armorList.firstChild);
+            }
+
+                let optionIds = [];
+                if (data.shopLevel === 1) {
+                    optionIds.push(24);
+                    optionIds.push(27);
+                } else if (data.shopLevel === 2) {
+                    optionIds.push(24);
+                    optionIds.push(27);
+                    optionIds.push(25);
+                    optionIds.push(28);
+                } else if (data.shopLevel === 3) {
+                    optionIds.push(24);
+                    optionIds.push(27);
+                    optionIds.push(25);
+                    optionIds.push(28);
+                    optionIds.push(26);
+                    optionIds.push(29);
+                }
+
+                optionIds.forEach(id => {
+                    let item = items.items.find(item => item.id === id);
+                    if (item) {
+                        let option = document.createElement('option');
+                        option.value = item.id;
+                        option.text = item.name;
+                        armorList.appendChild(option);
+                        if(data.armor ===id){
+                            option.selected = true;
+                        }
+                    }
+                });
+            
+            //勾玉
+            let moneyHtml = '所持金:' + data.money +'元'
+            document.getElementById('money').innerHTML = moneyHtml;
+            document.getElementById('magatamaYOU').innerHTML = '陽の勾玉:' + data.weaponLevel;
+            document.getElementById('magatamaIN').innerHTML = '陰の勾玉:' + data.armorLevel;
+            
+            let weaponCost;
+            if( data.weaponLevel < 5){
+                weaponCost = 200 * (data.weaponLevel + 1);
+            }else if( data.weaponLevel < 10){
+                weaponCost = 500 * (data.weaponLevel + 1);
+            }else if( data.weaponLevel < 15){
+                weaponCost = 1000 * (data.weaponLevel + 1);
+            }else if( data.weaponLevel < 20){
+                weaponCost = 2000 * (data.weaponLevel + 1);
+            }else if( data.weaponLevel < 30){
+                weaponCost = 5000 * (data.weaponLevel + 1);
+            }else{
+                weaponCost = 10000 * (data.weaponLevel + 1);
+            }
+
+            let armorCost;
+            if( data.armorLevel < 5){
+                armorCost = 200 * (data.armorLevel + 1);
+            }else if( data.armorLevel < 10){
+                armorCost = 500 * (data.armorLevel + 1);
+            }else if( data.armorLevel < 15){
+                armorCost = 1000 * (data.armorLevel + 1);
+            }else if( data.armorLevel < 20){
+                armorCost = 2000 * (data.armorLevel + 1);
+            }else if( data.armorLevel < 30){
+                armorCost = 5000 * (data.armorLevel + 1);
+            }else{
+                armorCost = 10000 * (data.armorLevel + 1);
+            }
+
+            let weaponCostHtml = '費用:' + weaponCost + '元'
+            document.getElementById('weaponCost').innerHTML = weaponCostHtml;
+            if (data.money <= weaponCost) {
+                document.getElementById('youKyouka').disabled = true;
+            }
+
+            let armorCostHtml = '費用:' + armorCost + '元'
+            document.getElementById('armorCost').innerHTML = armorCostHtml;
+            if (data.money <= armorCost) {
+                document.getElementById('inKyouka').disabled = true;
+            }
+
+            //武器と防具のリストを更新するたびにデータベースに保存
+            weaponList.addEventListener('change', function() {
+            let selectedOption = parseInt(this.value, 10);
+
+            let db = getDatabase();
+            let statusName = 'status/' + user.displayName;
+            let statusRef = ref(db, statusName);
+
+            update(statusRef, {
+                weapon: selectedOption
+            });
+            });
+
+            armorList.addEventListener('change', function() {
+            let selectedOption = parseInt(this.value, 10);
+
+            let db = getDatabase();
+            let statusName = 'status/' + user.displayName;
+            let statusRef = ref(db, statusName);
+
+            update(statusRef, {
+                armor: selectedOption
+            });
+            });
+
+        }});
+    }
+});
+
+</script>
+
+<script>
+
+//装備表示
+function soubiOpen(){
+  document.getElementById('soubiWindow').style.display = 'block';
+};
+//装備非表示
+function soubiClose(){
+  document.getElementById('soubiWindow').style.display = 'none';
+};
+
+//祈祷表示
+function kitouOpen(){
+  document.getElementById('kitouWindow').style.display = 'block';
+};
+//祈祷非表示
+function kitouClose(){
+  document.getElementById('kitouWindow').style.display = 'none';
+};
+
+//文字数カウント
+function updateCharacterCount() {
+        let inputText = document.getElementById('message').value;
+        let charCount = document.getElementById('char-count');
+        charCount.textContent = inputText.length + '/140文字';
+}
+
+	// ダブルタップ禁止
+	window.addEventListener('touchstart', function (event) {
+	    if (event.touches.length > 1) {
+	        event.preventDefault();
+	    }
+	}, { passive: false });
+
+	let lastTouchEnd = 0;
+	window.addEventListener('touchend', function (event) {
+	    const now = Date.now();
+	    if (now - lastTouchEnd <= 300) {
+	        event.preventDefault();
+	    }
+	    lastTouchEnd = now;
+	}, false);
+    
+</script>
+
+</html>
