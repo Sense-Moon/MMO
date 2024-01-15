@@ -1221,22 +1221,39 @@ function updateCharacterCount() {
         charCount.textContent = inputText.length + '/140文字';
 }
 
-	// ダブルタップ禁止
-	window.addEventListener('touchstart', function (event) {
-	    if (event.touches.length > 1) {
-	        event.preventDefault();
-	    }
-	}, { passive: false });
+// ダブルタップ禁止
+let touchStartTime;
+let tapCount = 0;
 
-	let lastTouchEnd = 0;
-	window.addEventListener('touchend', function (event) {
-	    const now = Date.now();
-	    if (now - lastTouchEnd <= 300) {
-	        event.preventDefault();
-	    }
-	    lastTouchEnd = now;
-	}, false);
-    
+window.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) {
+        // ピンチイン/アウトの開始
+        tapCount = 0; // タップカウントをリセット
+    } else {
+        // シングルタップの開始
+        if (!touchStartTime) {
+            // 最初のタップ
+            touchStartTime = Date.now();
+            tapCount = 1;
+        } else {
+            // 2回目のタップ
+            if (Date.now() - touchStartTime < 300) {
+                tapCount++;
+            } else {
+                // タイムアウトしたのでリセット
+                touchStartTime = Date.now();
+                tapCount = 1;
+            }
+        }
+    }
+}, { passive: false });
+
+window.addEventListener('touchend', function(event) {
+    if (tapCount === 2) {
+        event.preventDefault(); // ダブルタップを禁止
+    }
+}, false);
+
 </script>
 
 </html>
