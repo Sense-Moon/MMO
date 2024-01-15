@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <head>
 
   <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
@@ -11,7 +11,6 @@
 </head>
 
 <style>
-
 .map,.start-btn{
   position: absolute;
   background-color:#f7f5f4;
@@ -22,15 +21,16 @@
 }
 
 .map,.dungeon-box ,.dungeon,#battleInfo{
+  background-image: url(./img/background/map.png);
+  background-size: cover;
+  overflow-y: scroll;
+  overflow-x: scroll;
   width: 100vmin;
   height: calc(100vmin * 1.5); 
   max-width: 640px;
   max-height: 960px;
-  background-image: url(./img/background/map.png);
-  background-size: cover;
-  overflow-y: hidden;
-  overflow-x: scroll;
 }
+
 
 .dungeon-box, .dungeon,#battleInfo {
   background-image: none;
@@ -75,7 +75,7 @@
 
 #battleInfo{
   width: 100%;
-  height: 100%;
+  height: 99vh;
   overflow-y: scroll;
   background-color: #102431;
   position: absolute;
@@ -92,6 +92,10 @@
 
 }
 
+#battleMessage {
+    height: 75%;
+    overflow-y: scroll;
+}
 
 .close{
   z-index: 2;

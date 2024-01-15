@@ -8,7 +8,7 @@ body {
 	height: 99vh;
 	font-family: serif;
 	background-color: #0B1013;
-	overflow: hidden;
+	overflow: scroll;
 	color: #102431;
 }
   

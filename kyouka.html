@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <head>
 
   <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
@@ -23,14 +23,15 @@
 
 .kyouka {
   width: 100vmin;
-  height: calc(100vmin * 1.5); 
+  height: calc(100vmin * 1.5);
   max-width: 640px;
-  max-height: 960px;
+  max-height: 960px; 
   background-image: url(./img/background/kyouka.png);
   background-size: cover;
-  overflow-y: hidden;
+  overflow-y: scroll;
   overflow-x: scroll;
 }
+
 
 .chara {
   width: 60%;
@@ -619,7 +620,7 @@ document.getElementById('tenseiButton').addEventListener('click', function() {
         weapon = 20;
         armor = 27;
     }
-    if (data.level >= 20 + data.tensei) {
+    if (data.level >= 15 + data.tensei) {
         update(statusRef, {
             level: 1,
             job: tenseiJob,
@@ -680,7 +681,7 @@ onAuthStateChanged(auth, (user) => {
 
             //転生
             document.getElementById('tenseiLevel').innerHTML = '現在のレベル:' +  data.level
-            let tenseiPossibleLevel = Number(data.tensei) + 20;
+            let tenseiPossibleLevel = Number(data.tensei) + 15;
             document.getElementById('tenseiPossibleLevel').innerHTML ='転生可能レベル:'  + tenseiPossibleLevel;
 
             //投資
