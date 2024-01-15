@@ -266,7 +266,14 @@ onAuthStateChanged(auth, (user) => {
             let messageDiv = document.createElement('div');
             let splitKey = keys[i].split('_');
             let username = splitKey[0];
-            messageDiv.textContent = username + ': ' + messages[keys[i]];
+            let timestamp = new Date(parseInt(splitKey[1]));
+            let formattedTimestamp = (timestamp.getMonth() + 1) + '/' +
+                                    timestamp.getDate() + ' ' +
+                                    ('0' + timestamp.getHours()).slice(-2) + ':' +
+                                    ('0' + timestamp.getMinutes()).slice(-2) + ':' +
+                                    ('0' + timestamp.getSeconds()).slice(-2);
+
+            messageDiv.textContent = formattedTimestamp + ': ' + username + ': ' + messages[keys[i]];
             messagesDiv.appendChild(messageDiv);
         }
     });
